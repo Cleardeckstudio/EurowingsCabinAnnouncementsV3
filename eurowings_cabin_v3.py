@@ -1452,6 +1452,113 @@ def _msfs_tourne():
         return True
 
 
+PORT_SERVEUR_CONFIG = 58734
+
+
+def _demarre_serveur_config_toolbar(arreter):
+    """Petit serveur HTTP local pour le panneau de la barre d'outils MSFS
+    (CabinConfig) : GET /config lit la config courante, POST /config
+    l'ecrit et met a jour les variables globales (compagnie, codes ICAO,
+    langue, nom d'equipage) sans qu'il faille redemarrer le programme."""
+    import http.server
+    import socketserver
+
+    class Gestionnaire(http.server.BaseHTTPRequestHandler):
+        def _entetes_cors(self):
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+        def _repond_json(self, code, obj):
+            corps = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+            self.send_response(code)
+            self._entetes_cors()
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(corps)))
+            self.end_headers()
+            try:
+                self.wfile.write(corps)
+            except Exception:
+                pass
+
+        def do_OPTIONS(self):
+            self.send_response(204)
+            self._entetes_cors()
+            self.end_headers()
+
+        def do_GET(self):
+            if self.path.split("?", 1)[0].rstrip("/") != "/config":
+                self._repond_json(404, {"erreur": "introuvable"})
+                return
+            self._repond_json(200, {
+                "compagnie": COMPAGNIE,
+                "codes_compagnie": ",".join(CODES),
+                "langue": LANG,
+                "nom_equipage": NOM_EQUIPAGE,
+            })
+
+        def do_POST(self):
+            if self.path.split("?", 1)[0].rstrip("/") != "/config":
+                self._repond_json(404, {"erreur": "introuvable"})
+                return
+            global COMPAGNIE, CODES, LANG, SECONDE_LANGUE, PROFILS, NOM_EQUIPAGE
+            try:
+                taille = int(self.headers.get("Content-Length", "0") or "0")
+                brut = self.rfile.read(taille) if taille > 0 else b"{}"
+                entree = json.loads(brut.decode("utf-8") or "{}")
+            except Exception:
+                entree = {}
+
+            compagnie_nouvelle = str(entree.get("compagnie") or COMPAGNIE).strip() or COMPAGNIE
+            codes_txt = str(entree.get("codes_compagnie") or ",".join(CODES))
+            codes_nouveaux = [c.strip().upper() for c in codes_txt.split(",") if c.strip()] or CODES
+            langue_nouvelle = str(entree.get("langue") or LANG).strip().lower()
+            if langue_nouvelle not in {v[0] for v in LANGUES.values()}:
+                langue_nouvelle = LANG
+            nom_nouveau = str(entree.get("nom_equipage") or "").strip()
+
+            COMPAGNIE = compagnie_nouvelle
+            CODES = codes_nouveaux
+            LANG = langue_nouvelle
+            SECONDE_LANGUE = None if LANG == "en" else "en"
+            PROFILS = PROFILS_PAR_LANGUE[LANG]
+            NOM_EQUIPAGE = nom_nouveau
+
+            cfg = _charge_config()
+            cfg["compagnie"] = COMPAGNIE
+            cfg["codes_compagnie"] = ",".join(CODES)
+            cfg["langue"] = LANG
+            cfg["nom_equipage"] = NOM_EQUIPAGE
+            try:
+                _sauve_config(cfg)
+            except Exception:
+                pass
+
+            self._repond_json(200, {"ok": True})
+
+        def log_message(self, format, *args):
+            pass  # pas de bruit dans la console du programme
+
+    try:
+        httpd = socketserver.ThreadingTCPServer(("127.0.0.1", PORT_SERVEUR_CONFIG), Gestionnaire)
+        httpd.daemon_threads = True
+    except Exception as e:
+        print("Serveur config (barre d'outils) : impossible de demarrer (%s)." % e)
+        return
+
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+
+    def _arrete_avec_programme():
+        arreter.wait()
+        try:
+            httpd.shutdown()
+        except Exception:
+            pass
+
+    threading.Thread(target=_arrete_avec_programme, daemon=True).start()
+    print("Serveur config (barre d'outils) actif sur http://127.0.0.1:%d/config" % PORT_SERVEUR_CONFIG)
+
+
 def boucle_auto_msfs():
     """Lance par MSFS lui-meme (EXE.xml, --auto-msfs) : surveille les vols
     via SimConnect comme surveillance_simconnect, et se ferme tout seul des
@@ -1471,6 +1578,7 @@ def boucle_auto_msfs():
             time.sleep(10)
 
     threading.Thread(target=_surveiller_fermeture_msfs, daemon=True).start()
+    _demarre_serveur_config_toolbar(arreter)
     surveillance_simconnect(arreter=arreter)
 
 
