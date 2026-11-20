@@ -1299,7 +1299,7 @@ def surveillance_simconnect(arreter=None):
 
 def _chemin_exe_xml():
     """Retrouve EXE.xml de MSFS 2024 a partir du dossier Community choisi
-    (meme principe que pour d'autres add-ons auto-lances) :
+    (meme principe que pour Carriere/Copilote sur le PC d'Herve) :
     - version Microsoft Store : ...\\LocalCache\\Packages\\Community -> ...\\LocalCache\\EXE.xml
     - version Steam/Boite     : ...\\Microsoft Flight Simulator 2024\\Community -> ...\\exe.xml
     Renvoie None si le dossier Community ne ressemble a aucun des deux."""
