@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-pack_cabine.py : génère le pack d'annonces cabine Eurowings (français puis anglais) pour le Fenix A320.
-- lit le dernier plan SimBrief (numéro de vol, villes, durée, météo départ et arrivée)
+pack_cabine.py : gÃ©nÃ¨re le pack d'annonces cabine Eurowings (franÃ§ais puis anglais) pour le Fenix A320.
+- lit le dernier plan SimBrief (numÃ©ro de vol, villes, durÃ©e, mÃ©tÃ©o dÃ©part et arrivÃ©e)
 - fabrique les annonces avec les voix neuronales Microsoft (edge-tts), 20 profils de voix
-- écrit le pack dans Community/fnx-airline-packs-eurowings/AirlinePacks/EWG (et EWL = code de la livrée 9H-EWF)
+- Ã©crit le pack dans Community/fnx-airline-packs-eurowings/AirlinePacks/EWG (et EWL = code de la livrÃ©e 9H-EWF)
 
 Usage :
-  python pack_cabine.py --auto        nouveau plan SimBrief détecté ? alors régénère les annonces du vol (utilisé par Carrière)
-  python pack_cabine.py --tout        régénère tout (annonces génériques + annonces du vol)
-  python pack_cabine.py --vol         régénère uniquement les annonces du vol
-  python pack_cabine.py --test-voix   teste que les 20 profils de voix répondent
+  python pack_cabine.py --auto        nouveau plan SimBrief dÃ©tectÃ© ? alors rÃ©gÃ©nÃ¨re les annonces du vol (utilisÃ© par CarriÃ¨re)
+  python pack_cabine.py --tout        rÃ©gÃ©nÃ¨re tout (annonces gÃ©nÃ©riques + annonces du vol)
+  python pack_cabine.py --vol         rÃ©gÃ©nÃ¨re uniquement les annonces du vol
+  python pack_cabine.py --test-voix   teste que les 20 profils de voix rÃ©pondent
 """
 import asyncio, json, os, re, shutil, subprocess, sys, time, urllib.request, wave, math, struct, random, threading
 
@@ -138,7 +138,7 @@ PKG = os.path.join(COMMUNITY, "fnx-airline-packs-eurowings") if COMMUNITY else "
 print("Eurowings Cabin Announcements V3 - version", VERSION)
 
 # ------------------------------------------------------------------ voix
-# (voix française, voix anglaise, débit, hauteur)
+# (voix franÃ§aise, voix anglaise, dÃ©bit, hauteur)
 PROFILS_FR = [
     ("fr-FR-EloiseNeural", "en-GB-SoniaNeural", "+8%", "+0Hz"),
     ("fr-FR-DeniseNeural", "en-GB-SoniaNeural", "+6%", "+0Hz"),
@@ -206,31 +206,31 @@ LANG = _CFG.get("langue", "fr")
 SECONDE_LANGUE = None if LANG == "en" else "en"
 PROFILS = PROFILS_PAR_LANGUE[LANG]
 
-# ------------------------------------------------------------------ villes (nom parlé)
+# ------------------------------------------------------------------ villes (nom parlÃ©)
 VILLES = {
-    "EDDV": ("Hanovre", "Hanover", "Hannover", "Hannover"), "EDDK": ("Cologne", "Cologne", "Köln", "Colonia"), "EDDL": ("Düsseldorf", "Düsseldorf", "Düsseldorf", "Düsseldorf"),
-    "EDDH": ("Hambourg", "Hamburg", "Hamburg", "Hamburgo"), "EDDM": ("Munich", "Munich", "München", "Múnich"), "EDDF": ("Francfort", "Frankfurt", "Frankfurt", "Fráncfort"),
-    "EDDB": ("Berlin", "Berlin", "Berlin", "Berlín"), "EDDS": ("Stuttgart", "Stuttgart", "Stuttgart", "Stuttgart"), "EDDN": ("Nuremberg", "Nuremberg", "Nürnberg", "Núremberg"),
-    "EDDW": ("Brême", "Bremen", "Bremen", "Bremen"), "EDDP": ("Leipzig", "Leipzig", "Leipzig", "Leipzig"), "EDDC": ("Dresde", "Dresden", "Dresden", "Dresde"),
+    "EDDV": ("Hanovre", "Hanover", "Hannover", "Hannover"), "EDDK": ("Cologne", "Cologne", "KÃ¶ln", "Colonia"), "EDDL": ("DÃ¼sseldorf", "DÃ¼sseldorf", "DÃ¼sseldorf", "DÃ¼sseldorf"),
+    "EDDH": ("Hambourg", "Hamburg", "Hamburg", "Hamburgo"), "EDDM": ("Munich", "Munich", "MÃ¼nchen", "MÃºnich"), "EDDF": ("Francfort", "Frankfurt", "Frankfurt", "FrÃ¡ncfort"),
+    "EDDB": ("Berlin", "Berlin", "Berlin", "BerlÃ­n"), "EDDS": ("Stuttgart", "Stuttgart", "Stuttgart", "Stuttgart"), "EDDN": ("Nuremberg", "Nuremberg", "NÃ¼rnberg", "NÃºremberg"),
+    "EDDW": ("BrÃªme", "Bremen", "Bremen", "Bremen"), "EDDP": ("Leipzig", "Leipzig", "Leipzig", "Leipzig"), "EDDC": ("Dresde", "Dresden", "Dresden", "Dresde"),
     "LEPA": ("Palma de Majorque", "Palma de Mallorca", "Palma de Mallorca", "Palma de Mallorca"), "LEMD": ("Madrid", "Madrid", "Madrid", "Madrid"), "LEBL": ("Barcelone", "Barcelona", "Barcelona", "Barcelona"),
-    "LEAL": ("Alicante", "Alicante", "Alicante", "Alicante"), "LEMG": ("Malaga", "Malaga", "Malaga", "Málaga"), "LEZL": ("Séville", "Seville", "Sevilla", "Sevilla"),
-    "GCTS": ("Ténérife", "Tenerife", "Teneriffa", "Tenerife"), "GCLP": ("Grande Canarie", "Gran Canaria", "Gran Canaria", "Gran Canaria"), "GCRR": ("Lanzarote", "Lanzarote", "Lanzarote", "Lanzarote"),
+    "LEAL": ("Alicante", "Alicante", "Alicante", "Alicante"), "LEMG": ("Malaga", "Malaga", "Malaga", "MÃ¡laga"), "LEZL": ("SÃ©ville", "Seville", "Sevilla", "Sevilla"),
+    "GCTS": ("TÃ©nÃ©rife", "Tenerife", "Teneriffa", "Tenerife"), "GCLP": ("Grande Canarie", "Gran Canaria", "Gran Canaria", "Gran Canaria"), "GCRR": ("Lanzarote", "Lanzarote", "Lanzarote", "Lanzarote"),
     "GCFV": ("Fuerteventura", "Fuerteventura", "Fuerteventura", "Fuerteventura"), "LPPT": ("Lisbonne", "Lisbon", "Lissabon", "Lisboa"), "LPPR": ("Porto", "Porto", "Porto", "Oporto"),
-    "LPFR": ("Faro", "Faro", "Faro", "Faro"), "LIRF": ("Rome", "Rome", "Rom", "Roma"), "LIMC": ("Milan", "Milan", "Mailand", "Milán"), "LIPZ": ("Venise", "Venice", "Venedig", "Venecia"),
-    "LIRN": ("Naples", "Naples", "Neapel", "Nápoles"), "LICC": ("Catane", "Catania", "Catania", "Catania"), "LGAV": ("Athènes", "Athens", "Athen", "Atenas"),
-    "LGKR": ("Corfou", "Corfu", "Korfu", "Corfú"), "LGIR": ("Héraklion", "Heraklion", "Heraklion", "Heraclión"), "LTAI": ("Antalya", "Antalya", "Antalya", "Antalya"),
+    "LPFR": ("Faro", "Faro", "Faro", "Faro"), "LIRF": ("Rome", "Rome", "Rom", "Roma"), "LIMC": ("Milan", "Milan", "Mailand", "MilÃ¡n"), "LIPZ": ("Venise", "Venice", "Venedig", "Venecia"),
+    "LIRN": ("Naples", "Naples", "Neapel", "NÃ¡poles"), "LICC": ("Catane", "Catania", "Catania", "Catania"), "LGAV": ("AthÃ¨nes", "Athens", "Athen", "Atenas"),
+    "LGKR": ("Corfou", "Corfu", "Korfu", "CorfÃº"), "LGIR": ("HÃ©raklion", "Heraklion", "Heraklion", "HeracliÃ³n"), "LTAI": ("Antalya", "Antalya", "Antalya", "Antalya"),
     "LTBJ": ("Izmir", "Izmir", "Izmir", "Esmirna"), "HEGN": ("Hurghada", "Hurghada", "Hurghada", "Hurgada"), "HESH": ("Charm el-Cheikh", "Sharm el-Sheikh", "Sharm el-Scheich", "Sharm el-Sheij"),
     "HELX": ("Louxor", "Luxor", "Luxor", "Luxor"), "HEMA": ("Marsa Alam", "Marsa Alam", "Marsa Alam", "Marsa Alam"), "GMMX": ("Marrakech", "Marrakech", "Marrakesch", "Marrakech"),
-    "LFPG": ("Paris", "Paris", "Paris", "París"), "LFPO": ("Paris", "Paris", "Paris", "París"), "LFMN": ("Nice", "Nice", "Nizza", "Niza"), "LFLL": ("Lyon", "Lyon", "Lyon", "Lyon"),
+    "LFPG": ("Paris", "Paris", "Paris", "ParÃ­s"), "LFPO": ("Paris", "Paris", "Paris", "ParÃ­s"), "LFMN": ("Nice", "Nice", "Nizza", "Niza"), "LFLL": ("Lyon", "Lyon", "Lyon", "Lyon"),
     "LFML": ("Marseille", "Marseille", "Marseille", "Marsella"), "LFBO": ("Toulouse", "Toulouse", "Toulouse", "Toulouse"), "LFBD": ("Bordeaux", "Bordeaux", "Bordeaux", "Burdeos"),
-    "LFRS": ("Nantes", "Nantes", "Nantes", "Nantes"), "LFLS": ("Grenoble", "Grenoble", "Grenoble", "Grenoble"), "LFLB": ("Chambéry", "Chambery", "Chambéry", "Chambery"),
-    "LSZH": ("Zurich", "Zurich", "Zürich", "Zúrich"), "LSGG": ("Genève", "Geneva", "Genf", "Ginebra"), "LOWW": ("Vienne", "Vienna", "Wien", "Viena"),
+    "LFRS": ("Nantes", "Nantes", "Nantes", "Nantes"), "LFLS": ("Grenoble", "Grenoble", "Grenoble", "Grenoble"), "LFLB": ("ChambÃ©ry", "Chambery", "ChambÃ©ry", "Chambery"),
+    "LSZH": ("Zurich", "Zurich", "ZÃ¼rich", "ZÃºrich"), "LSGG": ("GenÃ¨ve", "Geneva", "Genf", "Ginebra"), "LOWW": ("Vienne", "Vienna", "Wien", "Viena"),
     "LKPR": ("Prague", "Prague", "Prag", "Praga"), "LHBP": ("Budapest", "Budapest", "Budapest", "Budapest"), "EPWA": ("Varsovie", "Warsaw", "Warschau", "Varsovia"),
-    "EHAM": ("Amsterdam", "Amsterdam", "Amsterdam", "Ámsterdam"), "EBBR": ("Bruxelles", "Brussels", "Brüssel", "Bruselas"), "EGLL": ("Londres", "London", "London", "Londres"),
+    "EHAM": ("Amsterdam", "Amsterdam", "Amsterdam", "Ãmsterdam"), "EBBR": ("Bruxelles", "Brussels", "BrÃ¼ssel", "Bruselas"), "EGLL": ("Londres", "London", "London", "Londres"),
     "EGKK": ("Londres", "London", "London", "Londres"), "EKCH": ("Copenhague", "Copenhagen", "Kopenhagen", "Copenhague"), "ESSA": ("Stockholm", "Stockholm", "Stockholm", "Estocolmo"),
     "ENGM": ("Oslo", "Oslo", "Oslo", "Oslo"), "EFHK": ("Helsinki", "Helsinki", "Helsinki", "Helsinki"), "LDDU": ("Dubrovnik", "Dubrovnik", "Dubrovnik", "Dubrovnik"),
     "LDSP": ("Split", "Split", "Split", "Split"), "LCLK": ("Larnaca", "Larnaca", "Larnaka", "Larnaca"), "LMML": ("Malte", "Malta", "Malta", "Malta"),
-    "LROP": ("Bucarest", "Bucharest", "Bukarest", "Bucarest"), "LBSF": ("Sofia", "Sofia", "Sofia", "Sofía"), "OMDB": ("Dubaï", "Dubai", "Dubai", "Dubái"),
+    "LROP": ("Bucarest", "Bucharest", "Bukarest", "Bucarest"), "LBSF": ("Sofia", "Sofia", "Sofia", "SofÃ­a"), "OMDB": ("DubaÃ¯", "Dubai", "Dubai", "DubÃ¡i"),
 }
 MOTS_AEROPORT = {"INTL", "INTERNATIONAL", "AIRPORT", "APT", "ARPT", "AIRFIELD", "AERODROME", "AEROPORT"}
 LANGS = ("fr", "en", "de", "es")
@@ -246,7 +246,7 @@ def nom_ville(icao, nom):
     return {L: v for L in LANGS}
 
 
-# ------------------------------------------------------------------ nombres et météo parlés
+# ------------------------------------------------------------------ nombres et mÃ©tÃ©o parlÃ©s
 from num2words import num2words
 
 
@@ -264,7 +264,7 @@ def vol_parle(fn):
             if b == 0:
                 out[L] = na + {"fr": " cent", "en": " hundred", "de": "hundert", "es": " cien"}[L]
             elif b < 10:
-                out[L] = na + {"fr": " zéro ", "en": " oh ", "de": " null ", "es": " cero "}[L] + n_mot(b, L)
+                out[L] = na + {"fr": " zÃ©ro ", "en": " oh ", "de": " null ", "es": " cero "}[L] + n_mot(b, L)
             else:
                 out[L] = na + " " + n_mot(b, L)
         return out
@@ -272,7 +272,7 @@ def vol_parle(fn):
 
 
 def duree_parlee(sec):
-    m = int(round(int(sec) / 300.0)) * 5          # arrondi à 5 minutes
+    m = int(round(int(sec) / 300.0)) * 5          # arrondi Ã  5 minutes
     h, mi = divmod(m, 60)
     MIN_MOT = {"fr": "minutes", "en": "minutes", "de": "Minuten", "es": "minutos"}
     HEURE = {"fr": ("heure", "heures"), "en": ("hour", "hours"), "de": ("Stunde", "Stunden"), "es": ("hora", "horas")}
@@ -286,9 +286,9 @@ def duree_parlee(sec):
         if mi == 0:
             out[L] = hf
         elif mi == 15:
-            out[L] = hf + {"fr": " et quart", "en": " and fifteen minutes", "de": " und fünfzehn Minuten", "es": " y cuarto"}[L]
+            out[L] = hf + {"fr": " et quart", "en": " and fifteen minutes", "de": " und fÃ¼nfzehn Minuten", "es": " y cuarto"}[L]
         elif mi == 30:
-            out[L] = hf + {"fr": " et demie", "en": " and a half", "de": " und dreißig Minuten", "es": " y media"}[L]
+            out[L] = hf + {"fr": " et demie", "en": " and a half", "de": " und dreiÃŸig Minuten", "es": " y media"}[L]
         else:
             nm = n_mot(mi, L)
             out[L] = hf + {"fr": " " + nm, "en": " and " + nm + " minutes", "de": " und " + nm + " Minuten", "es": " y " + nm + " minutos"}[L]
@@ -297,10 +297,10 @@ def duree_parlee(sec):
 
 def temp_parlee(t):
     if t is None:
-        return {"fr": "une température agréable", "en": "a pleasant temperature",
+        return {"fr": "une tempÃ©rature agrÃ©able", "en": "a pleasant temperature",
                 "de": "eine angenehme Temperatur", "es": "una temperatura agradable"}
     a = abs(t)
-    DEG = {"fr": ("degré", "degrés"), "en": ("degree", "degrees"), "de": ("Grad", "Grad"), "es": ("grado", "grados")}
+    DEG = {"fr": ("degrÃ©", "degrÃ©s"), "en": ("degree", "degrees"), "de": ("Grad", "Grad"), "es": ("grado", "grados")}
     MOINS = {"fr": "moins ", "en": "minus ", "de": "minus ", "es": "menos "}
     out = {}
     for L in LANGS:
@@ -313,7 +313,7 @@ def temp_parlee(t):
 CARD = {
     "fr": ["nord", "nord-est", "est", "sud-est", "sud", "sud-ouest", "ouest", "nord-ouest"],
     "en": ["northerly", "north-easterly", "easterly", "south-easterly", "southerly", "south-westerly", "westerly", "north-westerly"],
-    "de": ["Nord", "Nordost", "Ost", "Südost", "Süd", "Südwest", "West", "Nordwest"],
+    "de": ["Nord", "Nordost", "Ost", "SÃ¼dost", "SÃ¼d", "SÃ¼dwest", "West", "Nordwest"],
     "es": ["norte", "noreste", "este", "sureste", "sur", "suroeste", "oeste", "noroeste"],
 }
 
@@ -346,10 +346,10 @@ def parse_metar(m):
 
 
 def ciel_parle(m):
-    S = {"clr": {"fr": "ciel dégagé", "en": "clear skies", "de": "klarer Himmel", "es": "cielo despejado"},
+    S = {"clr": {"fr": "ciel dÃ©gagÃ©", "en": "clear skies", "de": "klarer Himmel", "es": "cielo despejado"},
          "few": {"fr": "quelques nuages", "en": "a few clouds", "de": "ein paar Wolken", "es": "algunas nubes"},
-         "sct": {"fr": "quelques nuages épars", "en": "scattered clouds", "de": "aufgelockerte Bewölkung", "es": "nubes dispersas"},
-         "bkn": {"fr": "ciel nuageux", "en": "cloudy skies", "de": "bewölkter Himmel", "es": "cielo nublado"},
+         "sct": {"fr": "quelques nuages Ã©pars", "en": "scattered clouds", "de": "aufgelockerte BewÃ¶lkung", "es": "nubes dispersas"},
+         "bkn": {"fr": "ciel nuageux", "en": "cloudy skies", "de": "bewÃ¶lkter Himmel", "es": "cielo nublado"},
          "ovc": {"fr": "ciel couvert", "en": "overcast skies", "de": "bedeckter Himmel", "es": "cielo cubierto"}}[m["sky"]]
     WX = {"RA": {"fr": "de la pluie", "en": "rain", "de": "Regen", "es": "lluvia"},
           "SN": {"fr": "de la neige", "en": "snow", "de": "Schnee", "es": "nieve"},
@@ -357,8 +357,8 @@ def ciel_parle(m):
           "FG": {"fr": "du brouillard", "en": "fog", "de": "Nebel", "es": "niebla"},
           "BR": {"fr": "de la brume", "en": "mist", "de": "Dunst", "es": "neblina"},
           "TS": {"fr": "des orages", "en": "thunderstorms", "de": "Gewitter", "es": "tormentas"},
-          "GR": {"fr": "de la grêle", "en": "hail", "de": "Hagel", "es": "granizo"},
-          "HZ": {"fr": "une légère brume sèche", "en": "haze", "de": "Dunstschleier", "es": "calima"}}
+          "GR": {"fr": "de la grÃªle", "en": "hail", "de": "Hagel", "es": "granizo"},
+          "HZ": {"fr": "une lÃ©gÃ¨re brume sÃ¨che", "en": "haze", "de": "Dunstschleier", "es": "calima"}}
     AVEC = {"fr": ", avec ", "en": ", with ", "de": ", mit ", "es": ", con "}
     for k in ("TS", "SN", "RA", "DZ", "FG", "BR", "GR", "HZ"):
         if k in m["wx"]:
@@ -376,12 +376,12 @@ def vent_parle(m):
         dirn = CARD[L][i]
         nk = n_mot(kt, L)
         if kt >= 25:
-            out[L] = {"fr": "un vent soutenu de %s, %s nœuds" % (dirn, nk),
+            out[L] = {"fr": "un vent soutenu de %s, %s nÅ“uds" % (dirn, nk),
                        "en": "a strong %s wind, %s knots" % (dirn, nk),
-                       "de": "kräftiger Wind aus %s, %s Knoten" % (dirn, nk),
+                       "de": "krÃ¤ftiger Wind aus %s, %s Knoten" % (dirn, nk),
                        "es": "viento fuerte del %s, %s nudos" % (dirn, nk)}[L]
         else:
-            out[L] = {"fr": "un vent de %s de %s nœuds" % (dirn, nk),
+            out[L] = {"fr": "un vent de %s de %s nÅ“uds" % (dirn, nk),
                        "en": "a %s wind at %s knots" % (dirn, nk),
                        "de": "Wind aus %s mit %s Knoten" % (dirn, nk),
                        "es": "viento del %s de %s nudos" % (dirn, nk)}[L]
@@ -396,36 +396,36 @@ def commentaire(m):
     if t is None:
         return {"fr": "", "en": "", "de": "", "es": ""}
     if t >= 30:
-        return {"fr": "Pensez à la crème solaire.", "en": "Don't forget the sunscreen.",
+        return {"fr": "Pensez Ã  la crÃ¨me solaire.", "en": "Don't forget the sunscreen.",
                 "de": "Denken Sie an Sonnencreme.", "es": "No olvide la crema solar."}
     if t >= 22:
-        return {"fr": "Le temps est idéal pour une terrasse.", "en": "Perfect weather for a terrace.",
-                "de": "Ideales Wetter für eine Terrasse.", "es": "Un tiempo perfecto para una terraza."}
+        return {"fr": "Le temps est idÃ©al pour une terrasse.", "en": "Perfect weather for a terrace.",
+                "de": "Ideales Wetter fÃ¼r eine Terrasse.", "es": "Un tiempo perfecto para una terraza."}
     if t >= 12:
-        return {"fr": "Un temps tout à fait raisonnable.", "en": "A perfectly reasonable climate.",
+        return {"fr": "Un temps tout Ã  fait raisonnable.", "en": "A perfectly reasonable climate.",
                 "de": "Ein ganz angenehmes Wetter.", "es": "Un clima bastante agradable."}
     if t >= 3:
-        return {"fr": "Gardez votre manteau à portée de main.", "en": "Keep your coat within reach.",
+        return {"fr": "Gardez votre manteau Ã  portÃ©e de main.", "en": "Keep your coat within reach.",
                 "de": "Halten Sie Ihren Mantel griffbereit.", "es": "Tenga el abrigo a mano."}
     return {"fr": "Il fait frisquet, couvrez-vous bien.", "en": "It is chilly, so wrap up warm.",
-            "de": "Es ist frisch, ziehen Sie sich warm an.", "es": "Hace fresco, abríguese bien."}
+            "de": "Es ist frisch, ziehen Sie sich warm an.", "es": "Hace fresco, abrÃ­guese bien."}
 
 
 def turbulence_parle(plan):
     """Estimation grossiere a partir des sigmets actifs et du cisaillement (shear) par point de la navlog
     SimBrief brute (pas une prevision precise, juste de quoi rassurer ou prevenir les passagers)."""
-    FORT = {"fr": "Le commandant de bord annonce quelques turbulences possibles en cours de route. Gardez votre ceinture attachée par précaution.",
+    FORT = {"fr": "Le commandant de bord annonce quelques turbulences possibles en cours de route. Gardez votre ceinture attachÃ©e par prÃ©caution.",
             "en": "The captain expects some turbulence along the way. Please keep your seat belt fastened as a precaution.",
-            "de": "Der Kapitän rechnet unterwegs mit möglichen Turbulenzen. Bitte behalten Sie zur Vorsicht Ihren Sicherheitsgurt angelegt.",
-            "es": "El comandante prevé algunas turbulencias durante el vuelo. Por precaución, mantenga el cinturón abrochado."}
-    LEGER = {"fr": "De légères turbulences sont possibles durant le vol, rien d'inquiétant.",
+            "de": "Der KapitÃ¤n rechnet unterwegs mit mÃ¶glichen Turbulenzen. Bitte behalten Sie zur Vorsicht Ihren Sicherheitsgurt angelegt.",
+            "es": "El comandante prevÃ© algunas turbulencias durante el vuelo. Por precauciÃ³n, mantenga el cinturÃ³n abrochado."}
+    LEGER = {"fr": "De lÃ©gÃ¨res turbulences sont possibles durant le vol, rien d'inquiÃ©tant.",
              "en": "Some light turbulence is possible during the flight, nothing to worry about.",
-             "de": "Leichte Turbulenzen sind während des Flugs möglich, kein Grund zur Sorge.",
-             "es": "Es posible que haya ligeras turbulencias durante el vuelo, sin motivo de preocupación."}
-    CALME = {"fr": "Le vol devrait se dérouler sans turbulence notable.",
+             "de": "Leichte Turbulenzen sind wÃ¤hrend des Flugs mÃ¶glich, kein Grund zur Sorge.",
+             "es": "Es posible que haya ligeras turbulencias durante el vuelo, sin motivo de preocupaciÃ³n."}
+    CALME = {"fr": "Le vol devrait se dÃ©rouler sans turbulence notable.",
              "en": "The flight should be smooth, with no significant turbulence expected.",
              "de": "Der Flug sollte ruhig verlaufen, ohne nennenswerte Turbulenzen.",
-             "es": "El vuelo debería transcurrir sin turbulencias significativas."}
+             "es": "El vuelo deberÃ­a transcurrir sin turbulencias significativas."}
     sig = (plan.get("sigmets") or {}).get("sigmet")
     if isinstance(sig, dict):
         sig = [sig]
@@ -474,125 +474,161 @@ def contexte(plan, metar_o=None, metar_d=None):
         retard_min = 0
     if retard_min >= 15:
         RETARD = {
-            "fr": " Nous sommes désolés de vous informer que notre départ est retardé d'environ %d minutes ; nous ferons de notre mieux pour rattraper ce retard en vol. Merci de votre patience." % retard_min,
+            "fr": " Nous sommes dÃ©solÃ©s de vous informer que notre dÃ©part est retardÃ© d'environ %d minutes ; nous ferons de notre mieux pour rattraper ce retard en vol. Merci de votre patience." % retard_min,
             "en": " We are sorry to inform you that our departure is delayed by about %d minutes; we will do our best to make up for the delay during the flight. Thank you for your patience." % retard_min,
-            "de": " Wir bedauern, Ihnen mitteilen zu müssen, dass sich unser Abflug um etwa %d Minuten verzögert; wir werden unser Bestes tun, um die Verspätung während des Flugs aufzuholen. Vielen Dank für Ihre Geduld." % retard_min,
+            "de": " Wir bedauern, Ihnen mitteilen zu mÃ¼ssen, dass sich unser Abflug um etwa %d Minuten verzÃ¶gert; wir werden unser Bestes tun, um die VerspÃ¤tung wÃ¤hrend des Flugs aufzuholen. Vielen Dank fÃ¼r Ihre Geduld." % retard_min,
             "es": " Lamentamos informarles de que nuestra salida se retrasa unos %d minutos; haremos lo posible por recuperar el retraso durante el vuelo. Gracias por su paciencia." % retard_min,
         }
     else:
         RETARD = {L: "" for L in LANGS}
 
-    # --- repas : menu + boissons selon l'heure locale au depart ---
+    # --- repas : menu + boissons selon l'heure locale REELLE a l'origine ---
     try:
         tz_o = float(str(o.get("timezone") or 0))
     except Exception:
         tz_o = 0.0
+    heure_utc_reelle = None
     try:
-        base_t = int(tm.get("est_out") or tm.get("sched_out") or 0)
+        from SimConnect import SimConnect, AircraftRequests
+        _sm_h = SimConnect()
+        _aq_h = AircraftRequests(_sm_h, _time=500)
+        zt = _aq_h.get("ZULU_TIME")
+        if zt is not None:
+            heure_utc_reelle = (float(zt) / 3600.0) % 24.0
+        _sm_h.exit()
     except Exception:
-        base_t = 0
-    heure_locale = time.gmtime(base_t + int(tz_o * 3600)).tm_hour if base_t else 12
+        heure_utc_reelle = None
+    if heure_utc_reelle is not None:
+        minute_locale = int(round((heure_utc_reelle + tz_o) * 60.0)) % 1440
+    else:
+        try:
+            base_t = int(tm.get("est_out") or tm.get("sched_out") or 0)
+        except Exception:
+            base_t = 0
+        if base_t:
+            _tl = time.gmtime(base_t + int(tz_o * 3600))
+            minute_locale = _tl.tm_hour * 60 + _tl.tm_min
+        else:
+            minute_locale = 12 * 60
+    heure_locale = minute_locale // 60
+    nuit_embarquement = (minute_locale >= 22 * 60 or minute_locale < 6 * 60)
+    if nuit_embarquement:
+        AMBIANCE_NUIT = {
+            "fr": " Comme notre vol a lieu de nuit, nous avons baissÃ© l'Ã©clairage de la cabine pour votre confort ; des masques pour les yeux, des bouchons d'oreille et des couvertures sont Ã  votre disposition sur simple demande auprÃ¨s de notre Ã©quipage.",
+            "en": " As this is a night flight, we have dimmed the cabin lighting for your comfort; eye masks, earplugs and blankets are available on request from our crew.",
+            "de": " Da es sich um einen Nachtflug handelt, haben wir die Kabinenbeleuchtung zu Ihrem Komfort gedimmt; Augenmasken, OhrstÃ¶psel und Decken erhalten Sie auf Anfrage bei unserer Crew.",
+            "es": " Al tratarse de un vuelo nocturno, hemos atenuado la iluminaciÃ³n de la cabina para su comodidad; antifaces, tapones para los oÃ­dos y mantas estÃ¡n disponibles bajo peticiÃ³n a nuestra tripulaciÃ³n.",
+        }
+    else:
+        AMBIANCE_NUIT = {L: "" for L in LANGS}
+
+    WIFI_DIVERTISSEMENT = {
+        "fr": " Pour vous divertir pendant le vol, connectez-vous au rÃ©seau Wi-Fi Ã  bord : films, sÃ©ries et presse numÃ©rique sont accessibles gratuitement en streaming depuis votre propre tÃ©lÃ©phone ou tablette.",
+        "en": " To keep you entertained during the flight, connect to our onboard Wi-Fi network: movies, TV shows and digital magazines are available free of charge, streamed to your own phone or tablet.",
+        "de": " Zu Ihrer Unterhaltung wÃ¤hrend des Fluges verbinden Sie sich bitte mit unserem Bord-WLAN: Filme, Serien und digitale Zeitschriften stehen kostenlos zum Streamen auf Ihrem eigenen Smartphone oder Tablet bereit.",
+        "es": " Para su entretenimiento durante el vuelo, conÃ©ctese a nuestra red Wi-Fi de a bordo: pelÃ­culas, series y prensa digital estÃ¡n disponibles gratis en streaming desde su propio telÃ©fono o tableta.",
+    }
 
     MENUS = {
         "petit_dej": {
-            "fr": ["un petit-déjeuner continental avec viennoiserie, fromage frais et fruits",
-                   "un petit-déjeuner chaud avec omelette, pain grillé et confiture"],
+            "fr": ["un petit-dÃ©jeuner continental avec viennoiserie, fromage frais et fruits",
+                   "un petit-dÃ©jeuner chaud avec omelette, pain grillÃ© et confiture"],
             "en": ["a continental breakfast with pastry, fresh cheese and fruit",
                    "a hot breakfast with omelette, toast and jam"],
-            "de": ["ein kontinentales Frühstück mit Gebäck, Frischkäse und Obst",
-                   "ein warmes Frühstück mit Omelett, Toast und Marmelade"],
-            "es": ["un desayuno continental con bollería, queso fresco y fruta",
+            "de": ["ein kontinentales FrÃ¼hstÃ¼ck mit GebÃ¤ck, FrischkÃ¤se und Obst",
+                   "ein warmes FrÃ¼hstÃ¼ck mit Omelett, Toast und Marmelade"],
+            "es": ["un desayuno continental con bollerÃ­a, queso fresco y fruta",
                    "un desayuno caliente con tortilla, tostadas y mermelada"],
         },
         "dejeuner": {
-            "fr": ["un plat de poulet rôti, riz et légumes de saison",
-                   "un plat de pâtes aux légumes méditerranéens",
-                   "un plat de saumon, purée et haricots verts"],
+            "fr": ["un plat de poulet rÃ´ti, riz et lÃ©gumes de saison",
+                   "un plat de pÃ¢tes aux lÃ©gumes mÃ©diterranÃ©ens",
+                   "un plat de saumon, purÃ©e et haricots verts"],
             "en": ["roast chicken with rice and seasonal vegetables",
                    "pasta with Mediterranean vegetables",
                    "salmon with mashed potatoes and green beans"],
-            "de": ["gebratenes Hähnchen mit Reis und Gemüse der Saison",
-                   "Nudeln mit mediterranem Gemüse",
-                   "Lachs mit Kartoffelpüree und grünen Bohnen"],
+            "de": ["gebratenes HÃ¤hnchen mit Reis und GemÃ¼se der Saison",
+                   "Nudeln mit mediterranem GemÃ¼se",
+                   "Lachs mit KartoffelpÃ¼ree und grÃ¼nen Bohnen"],
             "es": ["pollo asado con arroz y verduras de temporada",
-                   "pasta con verduras mediterráneas",
-                   "salmón con puré de patata y judías verdes"],
+                   "pasta con verduras mediterrÃ¡neas",
+                   "salmÃ³n con purÃ© de patata y judÃ­as verdes"],
         },
         "collation": {
-            "fr": ["une collation sucrée-salée avec sandwich et pâtisserie",
-                   "une collation avec salade composée et gâteau"],
+            "fr": ["une collation sucrÃ©e-salÃ©e avec sandwich et pÃ¢tisserie",
+                   "une collation avec salade composÃ©e et gÃ¢teau"],
             "en": ["a sweet and savoury snack with a sandwich and pastry",
                    "a snack with a mixed salad and cake"],
-            "de": ["einen süß-herzhaften Snack mit Sandwich und Gebäck",
+            "de": ["einen sÃ¼ÃŸ-herzhaften Snack mit Sandwich und GebÃ¤ck",
                    "einen Snack mit gemischtem Salat und Kuchen"],
-            "es": ["un tentempié dulce y salado con sándwich y bollería",
-                   "un tentempié con ensalada variada y pastel"],
+            "es": ["un tentempiÃ© dulce y salado con sÃ¡ndwich y bollerÃ­a",
+                   "un tentempiÃ© con ensalada variada y pastel"],
         },
         "diner": {
-            "fr": ["un dîner avec filet de poulet, pommes de terre et légumes",
-                   "un dîner avec risotto aux champignons",
-                   "un dîner avec poisson, riz et légumes verts"],
+            "fr": ["un dÃ®ner avec filet de poulet, pommes de terre et lÃ©gumes",
+                   "un dÃ®ner avec risotto aux champignons",
+                   "un dÃ®ner avec poisson, riz et lÃ©gumes verts"],
             "en": ["chicken fillet with potatoes and vegetables",
                    "mushroom risotto",
                    "fish with rice and green vegetables"],
-            "de": ["Hähnchenfilet mit Kartoffeln und Gemüse",
+            "de": ["HÃ¤hnchenfilet mit Kartoffeln und GemÃ¼se",
                    "Pilzrisotto",
-                   "Fisch mit Reis und grünem Gemüse"],
+                   "Fisch mit Reis und grÃ¼nem GemÃ¼se"],
             "es": ["filete de pollo con patatas y verduras",
                    "risotto de setas",
                    "pescado con arroz y verduras verdes"],
         },
     }
-    BOISSONS = {"fr": "eau, jus de fruits, sodas, thé, café, et une sélection de vins et bières",
+    BOISSONS = {"fr": "eau, jus de fruits, sodas, thÃ©, cafÃ©, et une sÃ©lection de vins et biÃ¨res",
                 "en": "water, fruit juice, soft drinks, tea, coffee, and a selection of wines and beers",
                 "de": "Wasser, Fruchtsaft, Softdrinks, Tee, Kaffee sowie eine Auswahl an Wein und Bier",
-                "es": "agua, zumo de frutas, refrescos, té, café, y una selección de vinos y cervezas"}
+                "es": "agua, zumo de frutas, refrescos, tÃ©, cafÃ©, y una selecciÃ³n de vinos y cervezas"}
 
-    if 23 <= heure_locale or heure_locale < 5:
+    if nuit_embarquement:
         REPAS = {
-            "fr": "Comme il s'agit d'un vol de nuit, le service sera léger : le nécessaire (eau, couvertures, collations) est à votre disposition aux emplacements prévus dans la cabine.",
+            "fr": "Comme il s'agit d'un vol de nuit, le service sera lÃ©ger : le nÃ©cessaire (eau, couvertures, collations) est Ã  votre disposition aux emplacements prÃ©vus dans la cabine.",
             "en": "As this is a night flight, service will be light: water, blankets and snacks are available at the locations provided in the cabin.",
-            "de": "Da es sich um einen Nachtflug handelt, fällt der Service schlicht aus: Wasser, Decken und Snacks finden Sie an den dafür vorgesehenen Stellen in der Kabine.",
-            "es": "Al tratarse de un vuelo nocturno, el servicio será ligero: el agua, las mantas y los tentempiés están disponibles en los lugares previstos de la cabina.",
+            "de": "Da es sich um einen Nachtflug handelt, fÃ¤llt der Service schlicht aus: Wasser, Decken und Snacks finden Sie an den dafÃ¼r vorgesehenen Stellen in der Kabine.",
+            "es": "Al tratarse de un vuelo nocturno, el servicio serÃ¡ ligero: el agua, las mantas y los tentempiÃ©s estÃ¡n disponibles en los lugares previstos de la cabina.",
         }
     else:
-        if 5 <= heure_locale < 10:
-            cle, moment = "petit_dej", {"fr": "Comme il est tôt, nous vous proposons", "en": "As it is still early, we are offering you",
-                                         "de": "Da es noch früh ist, bieten wir Ihnen", "es": "Como es temprano, les proponemos"}
-        elif 10 <= heure_locale < 15:
-            cle, moment = "dejeuner", {"fr": "Pour le déjeuner, nous vous proposons", "en": "For lunch, we are offering you",
+        if 6 * 60 <= minute_locale < 8 * 60:
+            cle, moment = "petit_dej", {"fr": "Comme il est tÃ´t, nous vous proposons", "en": "As it is still early, we are offering you",
+                                         "de": "Da es noch frÃ¼h ist, bieten wir Ihnen", "es": "Como es temprano, les proponemos"}
+        elif 11 * 60 + 30 <= minute_locale < 13 * 60 + 30:
+            cle, moment = "dejeuner", {"fr": "Pour le dÃ©jeuner, nous vous proposons", "en": "For lunch, we are offering you",
                                         "de": "Zum Mittagessen bieten wir Ihnen", "es": "Para el almuerzo, les proponemos"}
-        elif 15 <= heure_locale < 18:
+        elif 19 * 60 <= minute_locale < 21 * 60:
+            cle, moment = "diner", {"fr": "Pour le dÃ®ner, nous vous proposons", "en": "For dinner, we are offering you",
+                                     "de": "Zum Abendessen bieten wir Ihnen", "es": "Para la cena, les proponemos"}
+        else:
             cle, moment = "collation", {"fr": "Nous vous proposons", "en": "We are offering you",
                                          "de": "Wir bieten Ihnen", "es": "Les proponemos"}
-        else:
-            cle, moment = "diner", {"fr": "Pour le dîner, nous vous proposons", "en": "For dinner, we are offering you",
-                                     "de": "Zum Abendessen bieten wir Ihnen", "es": "Para la cena, les proponemos"}
         REPAS = {}
         for L in LANGS:
             menu_choisi = random.choice(MENUS[cle][L])
-            REPAS[L] = "%s %s, accompagné%s de %s." % (moment[L], menu_choisi, "" if L != "fr" else "", BOISSONS[L])                 if L == "fr" else "%s %s, with %s." % (moment[L], menu_choisi, BOISSONS[L]) if L == "en"                 else "%s %s, dazu %s." % (moment[L], menu_choisi, BOISSONS[L]) if L == "de"                 else "%s %s, junto con %s." % (moment[L], menu_choisi, BOISSONS[L])
+            REPAS[L] = "%s %s, accompagnÃ©%s de %s." % (moment[L], menu_choisi, "" if L != "fr" else "", BOISSONS[L])                 if L == "fr" else "%s %s, with %s." % (moment[L], menu_choisi, BOISSONS[L]) if L == "en"                 else "%s %s, dazu %s." % (moment[L], menu_choisi, BOISSONS[L]) if L == "de"                 else "%s %s, junto con %s." % (moment[L], menu_choisi, BOISSONS[L])
 
     # --- scenario rare (1 chance sur 10000) ---
     SCENARIO = {L: "" for L in LANGS}
     if random.random() < 1.0 / 10000:
         scenarios = [
-            {"fr": " Avant de poursuivre, nous vous informons qu'une légère urgence médicale a été signalée à bord : si un médecin ou un professionnel de santé se trouve parmi vous, merci de bien vouloir se signaler à un membre de notre équipage.",
+            {"fr": " Avant de poursuivre, nous vous informons qu'une lÃ©gÃ¨re urgence mÃ©dicale a Ã©tÃ© signalÃ©e Ã  bord : si un mÃ©decin ou un professionnel de santÃ© se trouve parmi vous, merci de bien vouloir se signaler Ã  un membre de notre Ã©quipage.",
              "en": " Before we continue, we would like to inform you that a minor medical situation has been reported on board: if there is a doctor or a healthcare professional among you, please identify yourself to a crew member.",
-             "de": " Bevor wir fortfahren, möchten wir Sie informieren, dass an Bord ein kleiner medizinischer Vorfall gemeldet wurde: Sollte sich ein Arzt oder eine medizinische Fachkraft unter Ihnen befinden, melden Sie sich bitte bei einem Besatzungsmitglied.",
-             "es": " Antes de continuar, les informamos de que se ha notificado una leve emergencia médica a bordo: si hay un médico o profesional sanitario entre ustedes, identifíquese ante un miembro de la tripulación."},
-            {"fr": " Nous profitons de ce moment pour vous informer qu'une de nos passagères est enceinte et approche du terme : si un médecin ou une sage-femme se trouve à bord, merci de bien vouloir se signaler discrètement à notre équipage.",
+             "de": " Bevor wir fortfahren, mÃ¶chten wir Sie informieren, dass an Bord ein kleiner medizinischer Vorfall gemeldet wurde: Sollte sich ein Arzt oder eine medizinische Fachkraft unter Ihnen befinden, melden Sie sich bitte bei einem Besatzungsmitglied.",
+             "es": " Antes de continuar, les informamos de que se ha notificado una leve emergencia mÃ©dica a bordo: si hay un mÃ©dico o profesional sanitario entre ustedes, identifÃ­quese ante un miembro de la tripulaciÃ³n."},
+            {"fr": " Nous profitons de ce moment pour vous informer qu'une de nos passagÃ¨res est enceinte et approche du terme : si un mÃ©decin ou une sage-femme se trouve Ã  bord, merci de bien vouloir se signaler discrÃ¨tement Ã  notre Ã©quipage.",
              "en": " We would also like to let you know that one of our passengers is expecting a baby and is close to her due date: if there is a doctor or a midwife on board, please discreetly identify yourself to our crew.",
-             "de": " Wir möchten Sie zudem informieren, dass sich eine schwangere Passagierin kurz vor der Entbindung an Bord befindet: Sollte sich ein Arzt oder eine Hebamme unter Ihnen befinden, melden Sie sich bitte diskret bei unserer Besatzung.",
-             "es": " Aprovechamos para informarles de que una de nuestras pasajeras está embarazada y próxima a dar a luz: si hay un médico o una matrona a bordo, identifíquese discretamente ante nuestra tripulación."},
-            {"fr": " Nous venons d'être informés qu'un passager présente des signes de malaise cardiaque : nous demandons à tout médecin ou professionnel de santé présent à bord de bien vouloir se signaler immédiatement à notre équipage.",
+             "de": " Wir mÃ¶chten Sie zudem informieren, dass sich eine schwangere Passagierin kurz vor der Entbindung an Bord befindet: Sollte sich ein Arzt oder eine Hebamme unter Ihnen befinden, melden Sie sich bitte diskret bei unserer Besatzung.",
+             "es": " Aprovechamos para informarles de que una de nuestras pasajeras estÃ¡ embarazada y prÃ³xima a dar a luz: si hay un mÃ©dico o una matrona a bordo, identifÃ­quese discretamente ante nuestra tripulaciÃ³n."},
+            {"fr": " Nous venons d'Ãªtre informÃ©s qu'un passager prÃ©sente des signes de malaise cardiaque : nous demandons Ã  tout mÃ©decin ou professionnel de santÃ© prÃ©sent Ã  bord de bien vouloir se signaler immÃ©diatement Ã  notre Ã©quipage.",
              "en": " We have just been informed that a passenger is showing signs of a cardiac episode: we kindly ask any doctor or healthcare professional on board to identify themselves to our crew immediately.",
              "de": " Wir wurden soeben informiert, dass ein Fahrgast Anzeichen eines Herzproblems zeigt: Wir bitten jeden an Bord befindlichen Arzt oder jede medizinische Fachkraft, sich sofort bei unserer Besatzung zu melden.",
-             "es": " Se nos acaba de informar de que un pasajero presenta síntomas de un episodio cardíaco: rogamos a cualquier médico o profesional sanitario a bordo que se identifique de inmediato ante nuestra tripulación."},
-            {"fr": " Petite anecdote de ce vol : une personnalité connue du grand public voyage parmi nous aujourd'hui. Par discrétion, l'équipage ne dira rien de plus, mais gardez l'œil ouvert.",
+             "es": " Se nos acaba de informar de que un pasajero presenta sÃ­ntomas de un episodio cardÃ­aco: rogamos a cualquier mÃ©dico o profesional sanitario a bordo que se identifique de inmediato ante nuestra tripulaciÃ³n."},
+            {"fr": " Petite anecdote de ce vol : une personnalitÃ© connue du grand public voyage parmi nous aujourd'hui. Par discrÃ©tion, l'Ã©quipage ne dira rien de plus, mais gardez l'Å“il ouvert.",
              "en": " A small anecdote for this flight: a well-known public figure is travelling with us today. Out of discretion, the crew will say no more, but keep an eye out.",
-             "de": " Eine kleine Anekdote für diesen Flug: Eine bekannte Persönlichkeit reist heute mit uns. Aus Diskretion sagt die Besatzung nicht mehr dazu, aber halten Sie die Augen offen.",
-             "es": " Una pequeña anécdota de este vuelo: una conocida personalidad viaja hoy con nosotros. Por discreción, la tripulación no dirá nada más, pero estén atentos."},
+             "de": " Eine kleine Anekdote fÃ¼r diesen Flug: Eine bekannte PersÃ¶nlichkeit reist heute mit uns. Aus Diskretion sagt die Besatzung nicht mehr dazu, aber halten Sie die Augen offen.",
+             "es": " Una pequeÃ±a anÃ©cdota de este vuelo: una conocida personalidad viaja hoy con nosotros. Por discreciÃ³n, la tripulaciÃ³n no dirÃ¡ nada mÃ¡s, pero estÃ©n atentos."},
         ]
         SCENARIO = random.choice(scenarios)
 
@@ -600,11 +636,12 @@ def contexte(plan, metar_o=None, metar_d=None):
     for L in LANGS:
         out[L] = dict(EW=EW[L], FN=fn[L], ORIG=vo[L], DEST=vd[L], DUR=du[L], TEMP_O=to[L], TEMP_D=td[L],
                       SKY_O=so[L], SKY_D=sd[L], WIND_D=wd[L], COMMENT_D=cm[L], TURB=tu[L], NOM=nom,
-                      RETARD=RETARD[L], REPAS=REPAS[L], SCENARIO=SCENARIO[L])
+                      RETARD=RETARD[L], REPAS=REPAS[L], SCENARIO=SCENARIO[L],
+                      AMBIANCE_NUIT=AMBIANCE_NUIT[L], WIFI=WIFI_DIVERTISSEMENT[L])
     return out
 
 
-# ------------------------------------------------------------------ textes : (type, avec_carillon, personnalisé, [(fr, en), ...])
+# ------------------------------------------------------------------ textes : (type, avec_carillon, personnalisÃ©, [(fr, en), ...])
 T = []
 
 
@@ -613,203 +650,203 @@ def add(nom, carillon, perso, variantes):
 
 
 add("BoardingWelcome", True, True, [
-    {"fr": "Mesdames et messieurs, bienvenue à bord de ce vol {EW} {FN}, à destination de {DEST}. Ici votre chef de cabine{NOM}.{RETARD} Installez-vous, et rangez vos bagages à main dans les coffres au-dessus de vos sièges, ou sous le siège devant vous. Si votre coffre est plein, c'est que quelqu'un a apporté tout son salon. Nous allons trouver une solution ensemble. Merci de votre patience.",
-     "en": "Ladies and gentlemen, welcome aboard {EW} flight {FN} to {DEST}. This is your cabin manager{NOM} speaking.{RETARD} Please make yourselves comfortable, and stow your hand luggage in the overhead lockers, or under the seat in front of you. If your locker is full, someone brought their entire living room. We will find a solution together. Thank you for your patience.",
-     "de": "Meine Damen und Herren, willkommen an Bord von {EW} Flug {FN} nach {DEST}. Hier spricht Ihr Kabinenchef{NOM}.{RETARD} Machen Sie es sich bequem und verstauen Sie Ihr Handgepäck in den Gepäckfächern über Ihrem Sitz oder unter dem Sitz vor Ihnen. Wenn Ihr Gepäckfach voll ist, hat wohl jemand sein ganzes Wohnzimmer mitgebracht. Wir finden gemeinsam eine Lösung. Vielen Dank für Ihre Geduld.",
-     "es": "Señoras y señores, bienvenidos a bordo del vuelo {EW} {FN} con destino a {DEST}. Les habla su jefe de cabina{NOM}.{RETARD} Pónganse cómodos y guarden su equipaje de mano en los compartimentos superiores, o bajo el asiento delantero. Si su compartimento está lleno, es que alguien ha traído todo su salón. Encontraremos una solución juntos. Gracias por su paciencia."},
-    {"fr": "Bienvenue à bord, mesdames et messieurs. Votre équipage vous souhaite un excellent vol {EW} à destination de {DEST}. Le temps de vol sera d'environ {DUR}. À {ORIG}, il fait actuellement {TEMP_O}, {SKY_O}. Prenez place, rangez vos affaires, et si vous avez le siège du milieu, toute notre compassion vous est acquise. Merci.",
+    {"fr": "Mesdames et messieurs, bienvenue Ã  bord de ce vol {EW} {FN}, Ã  destination de {DEST}. Ici votre chef de cabine{NOM}.{RETARD}{AMBIANCE_NUIT} Installez-vous, et rangez vos bagages Ã  main dans les coffres au-dessus de vos siÃ¨ges, ou sous le siÃ¨ge devant vous. Si votre coffre est plein, c'est que quelqu'un a apportÃ© tout son salon. Nous allons trouver une solution ensemble. Merci de votre patience.{WIFI}",
+     "en": "Ladies and gentlemen, welcome aboard {EW} flight {FN} to {DEST}. This is your cabin manager{NOM} speaking.{RETARD}{AMBIANCE_NUIT} Please make yourselves comfortable, and stow your hand luggage in the overhead lockers, or under the seat in front of you. If your locker is full, someone brought their entire living room. We will find a solution together. Thank you for your patience.{WIFI}",
+     "de": "Meine Damen und Herren, willkommen an Bord von {EW} Flug {FN} nach {DEST}. Hier spricht Ihr Kabinenchef{NOM}.{RETARD}{AMBIANCE_NUIT} Machen Sie es sich bequem und verstauen Sie Ihr HandgepÃ¤ck in den GepÃ¤ckfÃ¤chern Ã¼ber Ihrem Sitz oder unter dem Sitz vor Ihnen. Wenn Ihr GepÃ¤ckfach voll ist, hat wohl jemand sein ganzes Wohnzimmer mitgebracht. Wir finden gemeinsam eine LÃ¶sung. Vielen Dank fÃ¼r Ihre Geduld.{WIFI}",
+     "es": "SeÃ±oras y seÃ±ores, bienvenidos a bordo del vuelo {EW} {FN} con destino a {DEST}. Les habla su jefe de cabina{NOM}.{RETARD}{AMBIANCE_NUIT} PÃ³nganse cÃ³modos y guarden su equipaje de mano en los compartimentos superiores, o bajo el asiento delantero. Si su compartimento estÃ¡ lleno, es que alguien ha traÃ­do todo su salÃ³n. Encontraremos una soluciÃ³n juntos. Gracias por su paciencia.{WIFI}"},
+    {"fr": "Bienvenue Ã  bord, mesdames et messieurs. Votre Ã©quipage vous souhaite un excellent vol {EW} Ã  destination de {DEST}. Le temps de vol sera d'environ {DUR}. Ã€ {ORIG}, il fait actuellement {TEMP_O}, {SKY_O}. Prenez place, rangez vos affaires, et si vous avez le siÃ¨ge du milieu, toute notre compassion vous est acquise. Merci.",
      "en": "Welcome aboard, ladies and gentlemen. Your crew wishes you an excellent {EW} flight to {DEST}. Our flight time will be about {DUR}. In {ORIG}, it is currently {TEMP_O}, {SKY_O}. Please take your seats, stow your belongings, and if you have the middle seat, you have our full sympathy. Thank you.",
-     "de": "Willkommen an Bord, meine Damen und Herren. Ihre Crew wünscht Ihnen einen angenehmen {EW}-Flug nach {DEST}. Die Flugzeit beträgt etwa {DUR}. In {ORIG} ist es derzeit {TEMP_O}, {SKY_O}. Nehmen Sie Platz, verstauen Sie Ihre Sachen, und wenn Sie den Mittelsitz haben, haben Sie unser volles Mitgefühl. Vielen Dank.",
-     "es": "Bienvenidos a bordo, señoras y señores. Su tripulación les desea un excelente vuelo {EW} con destino a {DEST}. El tiempo de vuelo será de aproximadamente {DUR}. En {ORIG} hace actualmente {TEMP_O}, {SKY_O}. Tomen asiento, guarden sus pertenencias, y si tienen el asiento del medio, cuentan con toda nuestra compasión. Gracias."},
-    {"fr": "Mesdames et messieurs, l'équipage de ce vol {EW} {FN} est heureux de vous accueillir à bord. Nous nous rendons à {DEST}. Pendant que vous vous installez, merci de ranger vos bagages, et de laisser les allées libres. Nous savons que le coffre de la rangée dix est très attirant, mais il y a de la place pour tout le monde. Merci.",
+     "de": "Willkommen an Bord, meine Damen und Herren. Ihre Crew wÃ¼nscht Ihnen einen angenehmen {EW}-Flug nach {DEST}. Die Flugzeit betrÃ¤gt etwa {DUR}. In {ORIG} ist es derzeit {TEMP_O}, {SKY_O}. Nehmen Sie Platz, verstauen Sie Ihre Sachen, und wenn Sie den Mittelsitz haben, haben Sie unser volles MitgefÃ¼hl. Vielen Dank.",
+     "es": "Bienvenidos a bordo, seÃ±oras y seÃ±ores. Su tripulaciÃ³n les desea un excelente vuelo {EW} con destino a {DEST}. El tiempo de vuelo serÃ¡ de aproximadamente {DUR}. En {ORIG} hace actualmente {TEMP_O}, {SKY_O}. Tomen asiento, guarden sus pertenencias, y si tienen el asiento del medio, cuentan con toda nuestra compasiÃ³n. Gracias."},
+    {"fr": "Mesdames et messieurs, l'Ã©quipage de ce vol {EW} {FN} est heureux de vous accueillir Ã  bord. Nous nous rendons Ã  {DEST}. Pendant que vous vous installez, merci de ranger vos bagages, et de laisser les allÃ©es libres. Nous savons que le coffre de la rangÃ©e dix est trÃ¨s attirant, mais il y a de la place pour tout le monde. Merci.",
      "en": "Ladies and gentlemen, the crew of {EW} flight {FN} is delighted to welcome you on board. We are heading to {DEST}. While you settle in, please stow your bags, and keep the aisle clear. We know the locker above row ten looks very tempting, but there is room for everybody. Thank you.",
-     "de": "Meine Damen und Herren, die Crew von {EW} Flug {FN} freut sich, Sie an Bord willkommen zu heißen. Unser Ziel ist {DEST}. Während Sie sich einrichten, verstauen Sie bitte Ihr Gepäck und halten Sie den Gang frei. Wir wissen, dass das Gepäckfach in Reihe zehn sehr verlockend ist, aber es ist für alle genug Platz. Vielen Dank.",
-     "es": "Señoras y señores, la tripulación del vuelo {EW} {FN} se complace en darles la bienvenida a bordo. Nos dirigimos a {DEST}. Mientras se instalan, les rogamos guardar su equipaje y dejar el pasillo libre. Sabemos que el compartimento de la fila diez resulta muy tentador, pero hay sitio para todos. Gracias."},
+     "de": "Meine Damen und Herren, die Crew von {EW} Flug {FN} freut sich, Sie an Bord willkommen zu heiÃŸen. Unser Ziel ist {DEST}. WÃ¤hrend Sie sich einrichten, verstauen Sie bitte Ihr GepÃ¤ck und halten Sie den Gang frei. Wir wissen, dass das GepÃ¤ckfach in Reihe zehn sehr verlockend ist, aber es ist fÃ¼r alle genug Platz. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, la tripulaciÃ³n del vuelo {EW} {FN} se complace en darles la bienvenida a bordo. Nos dirigimos a {DEST}. Mientras se instalan, les rogamos guardar su equipaje y dejar el pasillo libre. Sabemos que el compartimento de la fila diez resulta muy tentador, pero hay sitio para todos. Gracias."},
 ])
 add("BoardingComplete", True, True, [
-    {"fr": "Mesdames et messieurs, l'embarquement est terminé. Merci d'avoir été aussi ponctuels. Nous allons bientôt fermer les portes. Votre temps de vol jusqu'à {DEST} sera d'environ {DUR}. Passez vos appareils électroniques en mode avion. Oui, même celui-là.",
+    {"fr": "Mesdames et messieurs, l'embarquement est terminÃ©. Merci d'avoir Ã©tÃ© aussi ponctuels. Nous allons bientÃ´t fermer les portes. Votre temps de vol jusqu'Ã  {DEST} sera d'environ {DUR}. Passez vos appareils Ã©lectroniques en mode avion. Oui, mÃªme celui-lÃ .",
      "en": "Ladies and gentlemen, boarding is now complete. Thank you for being so punctual. We will close the doors shortly. Your flight time to {DEST} will be about {DUR}. Please switch your electronic devices to flight mode. Yes, even that one.",
-     "de": "Meine Damen und Herren, das Boarding ist abgeschlossen. Vielen Dank, dass Sie so pünktlich waren. Wir werden die Türen in Kürze schließen. Ihre Flugzeit nach {DEST} beträgt etwa {DUR}. Bitte schalten Sie Ihre elektronischen Geräte in den Flugmodus. Ja, auch dieses.",
-     "es": "Señoras y señores, el embarque ha finalizado. Gracias por ser tan puntuales. En breve cerraremos las puertas. Su tiempo de vuelo hasta {DEST} será de aproximadamente {DUR}. Pongan sus dispositivos electrónicos en modo avión. Sí, incluso ese."},
-    {"fr": "Mesdames et messieurs, tout le monde est à bord, c'est parfait. Les portes vont être fermées. Nous volerons vers {DEST} pendant environ {DUR}. Veuillez attacher votre ceinture, et mettre vos téléphones en mode avion. Merci.",
+     "de": "Meine Damen und Herren, das Boarding ist abgeschlossen. Vielen Dank, dass Sie so pÃ¼nktlich waren. Wir werden die TÃ¼ren in KÃ¼rze schlieÃŸen. Ihre Flugzeit nach {DEST} betrÃ¤gt etwa {DUR}. Bitte schalten Sie Ihre elektronischen GerÃ¤te in den Flugmodus. Ja, auch dieses.",
+     "es": "SeÃ±oras y seÃ±ores, el embarque ha finalizado. Gracias por ser tan puntuales. En breve cerraremos las puertas. Su tiempo de vuelo hasta {DEST} serÃ¡ de aproximadamente {DUR}. Pongan sus dispositivos electrÃ³nicos en modo aviÃ³n. SÃ­, incluso ese."},
+    {"fr": "Mesdames et messieurs, tout le monde est Ã  bord, c'est parfait. Les portes vont Ãªtre fermÃ©es. Nous volerons vers {DEST} pendant environ {DUR}. Veuillez attacher votre ceinture, et mettre vos tÃ©lÃ©phones en mode avion. Merci.",
      "en": "Ladies and gentlemen, everybody is on board, which is perfect. The doors will now be closed. We will be flying to {DEST} for about {DUR}. Please fasten your seat belt, and put your phones in flight mode. Thank you.",
-     "de": "Meine Damen und Herren, alle sind an Bord, perfekt. Die Türen werden nun geschlossen. Wir fliegen etwa {DUR} nach {DEST}. Bitte schließen Sie Ihren Sicherheitsgurt und schalten Sie Ihre Telefone in den Flugmodus. Vielen Dank.",
-     "es": "Señoras y señores, todo el mundo está a bordo, perfecto. Las puertas van a cerrarse. Volaremos hacia {DEST} durante aproximadamente {DUR}. Abróchense el cinturón de seguridad y pongan sus teléfonos en modo avión. Gracias."},
-    {"fr": "Mesdames et messieurs, l'embarquement est maintenant terminé. L'équipage vous remercie, et vous souhaite un excellent vol {EW} jusqu'à {DEST}. Merci de rester assis, de relever votre tablette, et de préparer votre meilleur sourire pour la démonstration de sécurité.",
+     "de": "Meine Damen und Herren, alle sind an Bord, perfekt. Die TÃ¼ren werden nun geschlossen. Wir fliegen etwa {DUR} nach {DEST}. Bitte schlieÃŸen Sie Ihren Sicherheitsgurt und schalten Sie Ihre Telefone in den Flugmodus. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, todo el mundo estÃ¡ a bordo, perfecto. Las puertas van a cerrarse. Volaremos hacia {DEST} durante aproximadamente {DUR}. AbrÃ³chense el cinturÃ³n de seguridad y pongan sus telÃ©fonos en modo aviÃ³n. Gracias."},
+    {"fr": "Mesdames et messieurs, l'embarquement est maintenant terminÃ©. L'Ã©quipage vous remercie, et vous souhaite un excellent vol {EW} jusqu'Ã  {DEST}. Merci de rester assis, de relever votre tablette, et de prÃ©parer votre meilleur sourire pour la dÃ©monstration de sÃ©curitÃ©.",
      "en": "Ladies and gentlemen, boarding is now complete. The crew thanks you, and wishes you an excellent {EW} flight to {DEST}. Please remain seated, stow your tray table, and prepare your best smile for the safety demonstration.",
-     "de": "Meine Damen und Herren, das Boarding ist nun abgeschlossen. Die Crew bedankt sich und wünscht Ihnen einen ausgezeichneten {EW}-Flug nach {DEST}. Bitte bleiben Sie sitzen, klappen Sie Ihren Tisch hoch, und halten Sie Ihr schönstes Lächeln für die Sicherheitsvorführung bereit.",
-     "es": "Señoras y señores, el embarque ha finalizado. La tripulación les agradece y les desea un excelente vuelo {EW} hasta {DEST}. Permanezcan sentados, suban su mesita, y preparen su mejor sonrisa para la demostración de seguridad."},
+     "de": "Meine Damen und Herren, das Boarding ist nun abgeschlossen. Die Crew bedankt sich und wÃ¼nscht Ihnen einen ausgezeichneten {EW}-Flug nach {DEST}. Bitte bleiben Sie sitzen, klappen Sie Ihren Tisch hoch, und halten Sie Ihr schÃ¶nstes LÃ¤cheln fÃ¼r die SicherheitsvorfÃ¼hrung bereit.",
+     "es": "SeÃ±oras y seÃ±ores, el embarque ha finalizado. La tripulaciÃ³n les agradece y les desea un excelente vuelo {EW} hasta {DEST}. Permanezcan sentados, suban su mesita, y preparen su mejor sonrisa para la demostraciÃ³n de seguridad."},
 ])
 add("ArmDoors", False, False, [
-    {"fr": "Personnel de cabine, armez les portes et vérifiez en croisé.", "en": "Cabin crew, arm doors and cross-check.",
-     "de": "Kabinenpersonal, Türen scharf schalten und Kreuzkontrolle durchführen.", "es": "Personal de cabina, armen las puertas y verifiquen en cruzado."},
-    {"fr": "Équipage, portes en automatique, et contrôle croisé.", "en": "Crew, doors to automatic, and cross-check.",
-     "de": "Crew, Türen auf automatisch, und Kreuzkontrolle.", "es": "Tripulación, puertas en automático, y control cruzado."},
+    {"fr": "Personnel de cabine, armez les portes et vÃ©rifiez en croisÃ©.", "en": "Cabin crew, arm doors and cross-check.",
+     "de": "Kabinenpersonal, TÃ¼ren scharf schalten und Kreuzkontrolle durchfÃ¼hren.", "es": "Personal de cabina, armen las puertas y verifiquen en cruzado."},
+    {"fr": "Ã‰quipage, portes en automatique, et contrÃ´le croisÃ©.", "en": "Crew, doors to automatic, and cross-check.",
+     "de": "Crew, TÃ¼ren auf automatisch, und Kreuzkontrolle.", "es": "TripulaciÃ³n, puertas en automÃ¡tico, y control cruzado."},
 ])
 add("DisarmDoors", False, False, [
-    {"fr": "Personnel de cabine, désarmez les portes et vérifiez en croisé.", "en": "Cabin crew, disarm doors and cross-check.",
-     "de": "Kabinenpersonal, Türen entschärfen und Kreuzkontrolle durchführen.", "es": "Personal de cabina, desarmen las puertas y verifiquen en cruzado."},
-    {"fr": "Équipage, portes en manuel, et contrôle croisé.", "en": "Crew, doors to manual, and cross-check.",
-     "de": "Crew, Türen auf manuell, und Kreuzkontrolle.", "es": "Tripulación, puertas en manual, y control cruzado."},
+    {"fr": "Personnel de cabine, dÃ©sarmez les portes et vÃ©rifiez en croisÃ©.", "en": "Cabin crew, disarm doors and cross-check.",
+     "de": "Kabinenpersonal, TÃ¼ren entschÃ¤rfen und Kreuzkontrolle durchfÃ¼hren.", "es": "Personal de cabina, desarmen las puertas y verifiquen en cruzado."},
+    {"fr": "Ã‰quipage, portes en manuel, et contrÃ´le croisÃ©.", "en": "Crew, doors to manual, and cross-check.",
+     "de": "Crew, TÃ¼ren auf manuell, und Kreuzkontrolle.", "es": "TripulaciÃ³n, puertas en manual, y control cruzado."},
 ])
 add("PreSafetyBriefing", True, False, [
-    {"fr": "Mesdames et messieurs, votre attention s'il vous plaît. Nous allons commencer la démonstration de sécurité.",
+    {"fr": "Mesdames et messieurs, votre attention s'il vous plaÃ®t. Nous allons commencer la dÃ©monstration de sÃ©curitÃ©.",
      "en": "Ladies and gentlemen, may we have your attention please. We are about to begin the safety demonstration.",
-     "de": "Meine Damen und Herren, wir bitten um Ihre Aufmerksamkeit. Wir beginnen nun mit der Sicherheitsvorführung.",
-     "es": "Señoras y señores, su atención por favor. Vamos a comenzar la demostración de seguridad."},
-    {"fr": "Mesdames et messieurs, quelques instants d'attention pour les consignes de sécurité, merci.",
+     "de": "Meine Damen und Herren, wir bitten um Ihre Aufmerksamkeit. Wir beginnen nun mit der SicherheitsvorfÃ¼hrung.",
+     "es": "SeÃ±oras y seÃ±ores, su atenciÃ³n por favor. Vamos a comenzar la demostraciÃ³n de seguridad."},
+    {"fr": "Mesdames et messieurs, quelques instants d'attention pour les consignes de sÃ©curitÃ©, merci.",
      "en": "Ladies and gentlemen, a few moments of your attention for the safety instructions, please.",
-     "de": "Meine Damen und Herren, wir bitten Sie kurz um Ihre Aufmerksamkeit für die Sicherheitshinweise, danke.",
-     "es": "Señoras y señores, unos instantes de atención para las instrucciones de seguridad, gracias."},
-    {"fr": "Mesdames et messieurs, si vous voulez bien lever les yeux de votre téléphone, la démonstration de sécurité va commencer.",
+     "de": "Meine Damen und Herren, wir bitten Sie kurz um Ihre Aufmerksamkeit fÃ¼r die Sicherheitshinweise, danke.",
+     "es": "SeÃ±oras y seÃ±ores, unos instantes de atenciÃ³n para las instrucciones de seguridad, gracias."},
+    {"fr": "Mesdames et messieurs, si vous voulez bien lever les yeux de votre tÃ©lÃ©phone, la dÃ©monstration de sÃ©curitÃ© va commencer.",
      "en": "Ladies and gentlemen, if you could look up from your phone for a moment, the safety demonstration is about to begin.",
-     "de": "Meine Damen und Herren, wenn Sie bitte kurz von Ihrem Telefon aufschauen könnten, die Sicherheitsvorführung beginnt gleich.",
-     "es": "Señoras y señores, si pudieran levantar la vista de su teléfono un momento, la demostración de seguridad va a comenzar."},
+     "de": "Meine Damen und Herren, wenn Sie bitte kurz von Ihrem Telefon aufschauen kÃ¶nnten, die SicherheitsvorfÃ¼hrung beginnt gleich.",
+     "es": "SeÃ±oras y seÃ±ores, si pudieran levantar la vista de su telÃ©fono un momento, la demostraciÃ³n de seguridad va a comenzar."},
 ])
 add("SafetyBriefing", False, False, [
-    {"fr": "Il y a quatre sorties de secours, deux à l'avant, deux à l'arrière. Elles sont signalées par des bandes lumineuses au sol. Rassurez-vous, l'avion est symétrique. La ceinture : on l'attache en insérant la languette dans la boucle, et on la détache en ouvrant la boucle. Oui, c'est exactement comme dans une voiture. En cas de dépressurisation, des masques tomberont automatiquement. Tirez sur un masque, placez-le sur le nez et la bouche, et respirez normalement. Si vous voyagez avec un enfant, mettez d'abord le vôtre. Et si vous voyagez avec plusieurs enfants, choisissez votre préféré. Votre gilet de sauvetage est sous votre siège. Ne le gonflez qu'à l'extérieur de l'appareil. Enfin, il est interdit de fumer à bord, y compris dans les toilettes, et nos détecteurs sont très vigilants. Merci de votre attention, et bon vol avec {EW}.",
+    {"fr": "Il y a quatre sorties de secours, deux Ã  l'avant, deux Ã  l'arriÃ¨re. Elles sont signalÃ©es par des bandes lumineuses au sol. Rassurez-vous, l'avion est symÃ©trique. La ceinture : on l'attache en insÃ©rant la languette dans la boucle, et on la dÃ©tache en ouvrant la boucle. Oui, c'est exactement comme dans une voiture. En cas de dÃ©pressurisation, des masques tomberont automatiquement. Tirez sur un masque, placez-le sur le nez et la bouche, et respirez normalement. Si vous voyagez avec un enfant, mettez d'abord le vÃ´tre. Et si vous voyagez avec plusieurs enfants, choisissez votre prÃ©fÃ©rÃ©. Votre gilet de sauvetage est sous votre siÃ¨ge. Ne le gonflez qu'Ã  l'extÃ©rieur de l'appareil. Enfin, il est interdit de fumer Ã  bord, y compris dans les toilettes, et nos dÃ©tecteurs sont trÃ¨s vigilants. Merci de votre attention, et bon vol avec {EW}.",
      "en": "There are four emergency exits, two at the front, two at the back. They are marked by lights along the floor. Don't worry, the aircraft is symmetrical. Seat belts: insert the tab into the buckle to fasten, and open the buckle to release. Yes, exactly like in a car. In case of depressurisation, oxygen masks will drop automatically. Pull a mask towards you, place it over your nose and mouth, and breathe normally. If you are travelling with a child, put your own mask on first. And if you are travelling with several children, choose your favourite. Your life jacket is under your seat. Inflate it only once you are outside the aircraft. Finally, smoking is prohibited on board, including in the lavatories, and our detectors are very vigilant. Thank you for your attention, and enjoy your flight with {EW}.",
-     "de": "Es gibt vier Notausgänge, zwei vorne und zwei hinten. Sie sind durch Lichtleisten am Boden markiert. Keine Sorge, das Flugzeug ist symmetrisch. Der Sicherheitsgurt: Sie schließen ihn, indem Sie die Zunge in die Schnalle stecken, und öffnen ihn, indem Sie die Schnalle öffnen. Ja, genau wie im Auto. Bei Druckverlust fallen automatisch Sauerstoffmasken herab. Ziehen Sie an einer Maske, setzen Sie sie auf Nase und Mund, und atmen Sie normal. Wenn Sie mit einem Kind reisen, setzen Sie zuerst Ihre eigene Maske auf. Und wenn Sie mit mehreren Kindern reisen, wählen Sie Ihr Lieblingskind aus. Ihre Schwimmweste befindet sich unter Ihrem Sitz. Blasen Sie sie erst außerhalb des Flugzeugs auf. Schließlich ist das Rauchen an Bord verboten, auch in den Toiletten, und unsere Detektoren sind sehr wachsam. Vielen Dank für Ihre Aufmerksamkeit, und einen guten Flug mit {EW}.",
-     "es": "Hay cuatro salidas de emergencia, dos en la parte delantera y dos en la trasera. Están señaladas por bandas luminosas en el suelo. No se preocupen, el avión es simétrico. El cinturón: se abrocha insertando la lengüeta en la hebilla, y se desabrocha abriendo la hebilla. Sí, exactamente como en un coche. En caso de despresurización, las máscaras de oxígeno caerán automáticamente. Tire de una máscara, colóquela sobre la nariz y la boca, y respire con normalidad. Si viaja con un niño, póngase primero la suya. Y si viaja con varios niños, elija a su preferido. Su chaleco salvavidas está bajo su asiento. Ínflelo solo fuera de la aeronave. Por último, está prohibido fumar a bordo, incluso en los baños, y nuestros detectores son muy vigilantes. Gracias por su atención, y buen vuelo con {EW}."},
-    {"fr": "Cette démonstration dure deux minutes, et elle est plus utile que la plupart des réunions de votre semaine. Les sorties de secours : repérez la plus proche, et comptez les rangées qui vous séparent d'elle. Ça fait de l'exercice, au moins. Elles sont signalées par des bandes lumineuses au sol. Le gilet de sauvetage se trouve sous votre siège, pas dans le coffre à bagages, oui, on nous l'a déjà demandé. Ne le gonflez qu'une fois dehors. En cas de dépressurisation, les masques à oxygène tombent du plafond. Même si le sac ne se gonfle pas, l'oxygène circule, c'est normal. Si vous accompagnez un enfant, ou une personne qui a besoin d'aide, équipez-vous d'abord vous-même. Les appareils électroniques doivent rester en mode avion, c'est pour que vous profitiez enfin de quelques heures sans réunion. Il est interdit de fumer, cigarettes électroniques comprises. Merci, et excellent vol à bord de {EW}.",
+     "de": "Es gibt vier NotausgÃ¤nge, zwei vorne und zwei hinten. Sie sind durch Lichtleisten am Boden markiert. Keine Sorge, das Flugzeug ist symmetrisch. Der Sicherheitsgurt: Sie schlieÃŸen ihn, indem Sie die Zunge in die Schnalle stecken, und Ã¶ffnen ihn, indem Sie die Schnalle Ã¶ffnen. Ja, genau wie im Auto. Bei Druckverlust fallen automatisch Sauerstoffmasken herab. Ziehen Sie an einer Maske, setzen Sie sie auf Nase und Mund, und atmen Sie normal. Wenn Sie mit einem Kind reisen, setzen Sie zuerst Ihre eigene Maske auf. Und wenn Sie mit mehreren Kindern reisen, wÃ¤hlen Sie Ihr Lieblingskind aus. Ihre Schwimmweste befindet sich unter Ihrem Sitz. Blasen Sie sie erst auÃŸerhalb des Flugzeugs auf. SchlieÃŸlich ist das Rauchen an Bord verboten, auch in den Toiletten, und unsere Detektoren sind sehr wachsam. Vielen Dank fÃ¼r Ihre Aufmerksamkeit, und einen guten Flug mit {EW}.",
+     "es": "Hay cuatro salidas de emergencia, dos en la parte delantera y dos en la trasera. EstÃ¡n seÃ±aladas por bandas luminosas en el suelo. No se preocupen, el aviÃ³n es simÃ©trico. El cinturÃ³n: se abrocha insertando la lengÃ¼eta en la hebilla, y se desabrocha abriendo la hebilla. SÃ­, exactamente como en un coche. En caso de despresurizaciÃ³n, las mÃ¡scaras de oxÃ­geno caerÃ¡n automÃ¡ticamente. Tire de una mÃ¡scara, colÃ³quela sobre la nariz y la boca, y respire con normalidad. Si viaja con un niÃ±o, pÃ³ngase primero la suya. Y si viaja con varios niÃ±os, elija a su preferido. Su chaleco salvavidas estÃ¡ bajo su asiento. Ãnflelo solo fuera de la aeronave. Por Ãºltimo, estÃ¡ prohibido fumar a bordo, incluso en los baÃ±os, y nuestros detectores son muy vigilantes. Gracias por su atenciÃ³n, y buen vuelo con {EW}."},
+    {"fr": "Cette dÃ©monstration dure deux minutes, et elle est plus utile que la plupart des rÃ©unions de votre semaine. Les sorties de secours : repÃ©rez la plus proche, et comptez les rangÃ©es qui vous sÃ©parent d'elle. Ã‡a fait de l'exercice, au moins. Elles sont signalÃ©es par des bandes lumineuses au sol. Le gilet de sauvetage se trouve sous votre siÃ¨ge, pas dans le coffre Ã  bagages, oui, on nous l'a dÃ©jÃ  demandÃ©. Ne le gonflez qu'une fois dehors. En cas de dÃ©pressurisation, les masques Ã  oxygÃ¨ne tombent du plafond. MÃªme si le sac ne se gonfle pas, l'oxygÃ¨ne circule, c'est normal. Si vous accompagnez un enfant, ou une personne qui a besoin d'aide, Ã©quipez-vous d'abord vous-mÃªme. Les appareils Ã©lectroniques doivent rester en mode avion, c'est pour que vous profitiez enfin de quelques heures sans rÃ©union. Il est interdit de fumer, cigarettes Ã©lectroniques comprises. Merci, et excellent vol Ã  bord de {EW}.",
      "en": "This demonstration takes two minutes, and it is more useful than most of your meetings this week. Emergency exits: locate the nearest one, and count the rows between you and it. It is good exercise, at least. They are marked by lights along the floor. Your life jacket is under your seat, not in the overhead locker. Yes, we have been asked before. Inflate it only once you are outside. In case of depressurisation, oxygen masks will drop from the ceiling. Even if the bag does not inflate, oxygen is flowing, that is normal. If you are travelling with a child, or someone who needs assistance, fit your own mask first. Electronic devices must stay in flight mode, so you can finally enjoy a few hours without meetings. Smoking is prohibited, including electronic cigarettes. Thank you, and enjoy your flight on board {EW}.",
-     "de": "Diese Vorführung dauert zwei Minuten und ist nützlicher als die meisten Besprechungen Ihrer Woche. Die Notausgänge: Suchen Sie den nächstgelegenen, und zählen Sie die Reihen bis dorthin. Das ist immerhin etwas Bewegung. Sie sind durch Lichtleisten am Boden markiert. Die Schwimmweste befindet sich unter Ihrem Sitz, nicht im Gepäckfach – ja, das wurde uns schon gefragt. Blasen Sie sie erst auf, wenn Sie draußen sind. Bei Druckverlust fallen die Sauerstoffmasken von der Decke. Auch wenn sich der Beutel nicht füllt, fließt Sauerstoff, das ist normal. Wenn Sie ein Kind begleiten, oder eine Person, die Hilfe benötigt, setzen Sie zuerst Ihre eigene Maske auf. Elektronische Geräte müssen im Flugmodus bleiben, damit Sie endlich ein paar Stunden ohne Meeting genießen können. Rauchen ist verboten, auch elektronische Zigaretten. Vielen Dank, und einen ausgezeichneten Flug mit {EW}.",
-     "es": "Esta demostración dura dos minutos, y es más útil que la mayoría de las reuniones de su semana. Las salidas de emergencia: localice la más cercana, y cuente las filas que lo separan de ella. Al menos es algo de ejercicio. Están señaladas por bandas luminosas en el suelo. El chaleco salvavidas está bajo su asiento, no en el compartimento superior, sí, ya nos lo han preguntado. Ínflelo solo una vez fuera. En caso de despresurización, las máscaras de oxígeno caen del techo. Aunque la bolsa no se infle, el oxígeno circula, es normal. Si acompaña a un niño, o a una persona que necesite ayuda, colóquese primero su propia máscara. Los dispositivos electrónicos deben permanecer en modo avión, para que disfrute por fin de unas horas sin reuniones. Está prohibido fumar, incluidos los cigarrillos electrónicos. Gracias, y excelente vuelo a bordo de {EW}."},
-    {"fr": "Pour votre sécurité, voici quelques informations à retenir. Si vous ne devez retenir qu'une chose : la sortie la plus proche est peut-être derrière vous. Vous l'avez repérée ? Parfait. Les sorties sont indiquées par des lumières vertes. Pour attacher votre ceinture, insérez la languette dans la boucle. Pour la détacher, ouvrez la boucle, ce n'est pas un test d'intelligence. En cas de dépressurisation, un masque tombera devant vous. Tirez dessus, placez-le sur le visage, et respirez normalement. Les gilets de sauvetage sont sous les sièges. Ne les gonflez qu'à l'extérieur de l'avion, sinon vous aurez du mal à sortir, et ça gâchera l'effet. Il est strictement interdit de fumer. Si vous avez des questions, notre équipage se fera un plaisir d'y répondre, sauf celle de savoir si le repas est inclus. Merci, et bon vol avec {EW}.",
+     "de": "Diese VorfÃ¼hrung dauert zwei Minuten und ist nÃ¼tzlicher als die meisten Besprechungen Ihrer Woche. Die NotausgÃ¤nge: Suchen Sie den nÃ¤chstgelegenen, und zÃ¤hlen Sie die Reihen bis dorthin. Das ist immerhin etwas Bewegung. Sie sind durch Lichtleisten am Boden markiert. Die Schwimmweste befindet sich unter Ihrem Sitz, nicht im GepÃ¤ckfach â€“ ja, das wurde uns schon gefragt. Blasen Sie sie erst auf, wenn Sie drauÃŸen sind. Bei Druckverlust fallen die Sauerstoffmasken von der Decke. Auch wenn sich der Beutel nicht fÃ¼llt, flieÃŸt Sauerstoff, das ist normal. Wenn Sie ein Kind begleiten, oder eine Person, die Hilfe benÃ¶tigt, setzen Sie zuerst Ihre eigene Maske auf. Elektronische GerÃ¤te mÃ¼ssen im Flugmodus bleiben, damit Sie endlich ein paar Stunden ohne Meeting genieÃŸen kÃ¶nnen. Rauchen ist verboten, auch elektronische Zigaretten. Vielen Dank, und einen ausgezeichneten Flug mit {EW}.",
+     "es": "Esta demostraciÃ³n dura dos minutos, y es mÃ¡s Ãºtil que la mayorÃ­a de las reuniones de su semana. Las salidas de emergencia: localice la mÃ¡s cercana, y cuente las filas que lo separan de ella. Al menos es algo de ejercicio. EstÃ¡n seÃ±aladas por bandas luminosas en el suelo. El chaleco salvavidas estÃ¡ bajo su asiento, no en el compartimento superior, sÃ­, ya nos lo han preguntado. Ãnflelo solo una vez fuera. En caso de despresurizaciÃ³n, las mÃ¡scaras de oxÃ­geno caen del techo. Aunque la bolsa no se infle, el oxÃ­geno circula, es normal. Si acompaÃ±a a un niÃ±o, o a una persona que necesite ayuda, colÃ³quese primero su propia mÃ¡scara. Los dispositivos electrÃ³nicos deben permanecer en modo aviÃ³n, para que disfrute por fin de unas horas sin reuniones. EstÃ¡ prohibido fumar, incluidos los cigarrillos electrÃ³nicos. Gracias, y excelente vuelo a bordo de {EW}."},
+    {"fr": "Pour votre sÃ©curitÃ©, voici quelques informations Ã  retenir. Si vous ne devez retenir qu'une chose : la sortie la plus proche est peut-Ãªtre derriÃ¨re vous. Vous l'avez repÃ©rÃ©e ? Parfait. Les sorties sont indiquÃ©es par des lumiÃ¨res vertes. Pour attacher votre ceinture, insÃ©rez la languette dans la boucle. Pour la dÃ©tacher, ouvrez la boucle, ce n'est pas un test d'intelligence. En cas de dÃ©pressurisation, un masque tombera devant vous. Tirez dessus, placez-le sur le visage, et respirez normalement. Les gilets de sauvetage sont sous les siÃ¨ges. Ne les gonflez qu'Ã  l'extÃ©rieur de l'avion, sinon vous aurez du mal Ã  sortir, et Ã§a gÃ¢chera l'effet. Il est strictement interdit de fumer. Si vous avez des questions, notre Ã©quipage se fera un plaisir d'y rÃ©pondre, sauf celle de savoir si le repas est inclus. Merci, et bon vol avec {EW}.",
      "en": "For your safety, here is some information worth remembering. If you only remember one thing: the nearest exit may be behind you. Have you spotted it? Perfect. Exits are marked by green lights. To fasten your seat belt, insert the tab into the buckle. To release it, open the buckle. It is not an intelligence test. In case of depressurisation, a mask will drop in front of you. Pull it towards you, place it over your face, and breathe normally. Life jackets are under the seats. Inflate them only outside the aircraft, otherwise you will have trouble getting out, and it will spoil the effect. Smoking is strictly prohibited. If you have any questions, our crew will be happy to answer, except whether the meal is included. Thank you, and enjoy your flight with {EW}.",
-     "de": "Für Ihre Sicherheit hier einige wichtige Informationen. Wenn Sie sich nur eines merken sollen: Der nächste Ausgang könnte hinter Ihnen sein. Haben Sie ihn gefunden? Perfekt. Die Ausgänge sind durch grüne Lichter markiert. Um Ihren Gurt zu schließen, stecken Sie die Zunge in die Schnalle. Um ihn zu öffnen, öffnen Sie die Schnalle – das ist kein Intelligenztest. Bei Druckverlust fällt eine Maske vor Ihnen herab. Ziehen Sie daran, setzen Sie sie auf Ihr Gesicht, und atmen Sie normal. Die Schwimmwesten befinden sich unter den Sitzen. Blasen Sie sie erst außerhalb des Flugzeugs auf, sonst kommen Sie schwer heraus, und der Effekt wäre verdorben. Rauchen ist strikt verboten. Falls Sie Fragen haben, beantwortet unsere Crew diese gerne, außer ob die Mahlzeit inklusive ist. Vielen Dank, und einen guten Flug mit {EW}.",
-     "es": "Por su seguridad, aquí tienen algo de información que recordar. Si solo recuerdan una cosa: la salida más cercana puede estar detrás de ustedes. ¿La han localizado? Perfecto. Las salidas están señaladas con luces verdes. Para abrocharse el cinturón, inserte la lengüeta en la hebilla. Para desabrocharlo, abra la hebilla, no es una prueba de inteligencia. En caso de despresurización, una máscara caerá frente a usted. Tire de ella, colóquela sobre el rostro, y respire con normalidad. Los chalecos salvavidas están bajo los asientos. Ínflelos solo fuera del avión, de lo contrario le costará salir, y se estropeará el efecto. Está estrictamente prohibido fumar. Si tienen alguna pregunta, nuestra tripulación responderá con gusto, salvo si la comida está incluida. Gracias, y buen vuelo con {EW}."},
+     "de": "FÃ¼r Ihre Sicherheit hier einige wichtige Informationen. Wenn Sie sich nur eines merken sollen: Der nÃ¤chste Ausgang kÃ¶nnte hinter Ihnen sein. Haben Sie ihn gefunden? Perfekt. Die AusgÃ¤nge sind durch grÃ¼ne Lichter markiert. Um Ihren Gurt zu schlieÃŸen, stecken Sie die Zunge in die Schnalle. Um ihn zu Ã¶ffnen, Ã¶ffnen Sie die Schnalle â€“ das ist kein Intelligenztest. Bei Druckverlust fÃ¤llt eine Maske vor Ihnen herab. Ziehen Sie daran, setzen Sie sie auf Ihr Gesicht, und atmen Sie normal. Die Schwimmwesten befinden sich unter den Sitzen. Blasen Sie sie erst auÃŸerhalb des Flugzeugs auf, sonst kommen Sie schwer heraus, und der Effekt wÃ¤re verdorben. Rauchen ist strikt verboten. Falls Sie Fragen haben, beantwortet unsere Crew diese gerne, auÃŸer ob die Mahlzeit inklusive ist. Vielen Dank, und einen guten Flug mit {EW}.",
+     "es": "Por su seguridad, aquÃ­ tienen algo de informaciÃ³n que recordar. Si solo recuerdan una cosa: la salida mÃ¡s cercana puede estar detrÃ¡s de ustedes. Â¿La han localizado? Perfecto. Las salidas estÃ¡n seÃ±aladas con luces verdes. Para abrocharse el cinturÃ³n, inserte la lengÃ¼eta en la hebilla. Para desabrocharlo, abra la hebilla, no es una prueba de inteligencia. En caso de despresurizaciÃ³n, una mÃ¡scara caerÃ¡ frente a usted. Tire de ella, colÃ³quela sobre el rostro, y respire con normalidad. Los chalecos salvavidas estÃ¡n bajo los asientos. Ãnflelos solo fuera del aviÃ³n, de lo contrario le costarÃ¡ salir, y se estropearÃ¡ el efecto. EstÃ¡ estrictamente prohibido fumar. Si tienen alguna pregunta, nuestra tripulaciÃ³n responderÃ¡ con gusto, salvo si la comida estÃ¡ incluida. Gracias, y buen vuelo con {EW}."},
 ])
 add("CrewTakeSeats", False, False, [
     {"fr": "Personnel de cabine, prenez place.", "en": "Cabin crew, take your seats.",
-     "de": "Kabinenpersonal, bitte Plätze einnehmen.", "es": "Personal de cabina, tomen asiento."},
-    {"fr": "Équipage, asseyez-vous, s'il vous plaît.", "en": "Crew, please be seated.",
-     "de": "Crew, bitte setzen.", "es": "Tripulación, siéntense, por favor."},
+     "de": "Kabinenpersonal, bitte PlÃ¤tze einnehmen.", "es": "Personal de cabina, tomen asiento."},
+    {"fr": "Ã‰quipage, asseyez-vous, s'il vous plaÃ®t.", "en": "Crew, please be seated.",
+     "de": "Crew, bitte setzen.", "es": "TripulaciÃ³n, siÃ©ntense, por favor."},
 ])
 add("CabinDim", False, False, [
-    {"fr": "Mesdames et messieurs, nous allons baisser l'éclairage de la cabine. Merci de relever les stores si vous êtes près d'un hublot.",
+    {"fr": "Mesdames et messieurs, nous allons baisser l'Ã©clairage de la cabine. Merci de relever les stores si vous Ãªtes prÃ¨s d'un hublot.",
      "en": "Ladies and gentlemen, we will now dim the cabin lights. Please raise your window shades if you are seated by a window.",
-     "de": "Meine Damen und Herren, wir werden nun die Kabinenbeleuchtung dimmen. Bitte öffnen Sie die Fensterblenden, falls Sie am Fenster sitzen.",
-     "es": "Señoras y señores, vamos a reducir la iluminación de la cabina. Suban las persianas si están cerca de una ventanilla."},
-    {"fr": "Mesdames et messieurs, la cabine va être plongée dans la pénombre. Rassurez-vous, ce n'est pas pour une soirée cinéma.",
+     "de": "Meine Damen und Herren, wir werden nun die Kabinenbeleuchtung dimmen. Bitte Ã¶ffnen Sie die Fensterblenden, falls Sie am Fenster sitzen.",
+     "es": "SeÃ±oras y seÃ±ores, vamos a reducir la iluminaciÃ³n de la cabina. Suban las persianas si estÃ¡n cerca de una ventanilla."},
+    {"fr": "Mesdames et messieurs, la cabine va Ãªtre plongÃ©e dans la pÃ©nombre. Rassurez-vous, ce n'est pas pour une soirÃ©e cinÃ©ma.",
      "en": "Ladies and gentlemen, the cabin lights will now be dimmed. Don't worry, it is not movie night.",
      "de": "Meine Damen und Herren, die Kabine wird nun abgedunkelt. Keine Sorge, es ist kein Kinoabend.",
-     "es": "Señoras y señores, la cabina quedará en penumbra. No se preocupen, no es una sesión de cine."},
+     "es": "SeÃ±oras y seÃ±ores, la cabina quedarÃ¡ en penumbra. No se preocupen, no es una sesiÃ³n de cine."},
 ])
 add("CabinSecured", False, False, [
-    {"fr": "Cabine sécurisée.", "en": "Cabin secured.", "de": "Kabine gesichert.", "es": "Cabina asegurada."},
-    {"fr": "Cockpit, ici la cabine. La cabine est prête.", "en": "Flight deck, cabin crew. The cabin is ready.",
-     "de": "Cockpit, hier die Kabine. Die Kabine ist bereit.", "es": "Cabina de mando, aquí cabina. La cabina está lista."},
+    {"fr": "Cabine sÃ©curisÃ©e.", "en": "Cabin secured.", "de": "Kabine gesichert.", "es": "Cabina asegurada."},
+    {"fr": "Cockpit, ici la cabine. La cabine est prÃªte.", "en": "Flight deck, cabin crew. The cabin is ready.",
+     "de": "Cockpit, hier die Kabine. Die Kabine ist bereit.", "es": "Cabina de mando, aquÃ­ cabina. La cabina estÃ¡ lista."},
 ])
 add("AfterTakeoff", True, True, [
-    {"fr": "Mesdames et messieurs, nous venons de décoller de {ORIG}. Ici le chef de cabine{NOM}. Notre temps de vol jusqu'à {DEST} sera d'environ {DUR}. À {ORIG}, il fait {TEMP_O}, {SKY_O}. À {DEST}, il fait {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Nous reviendrons vers vous pour le service à bord. Merci.",
+    {"fr": "Mesdames et messieurs, nous venons de dÃ©coller de {ORIG}. Ici le chef de cabine{NOM}. Notre temps de vol jusqu'Ã  {DEST} sera d'environ {DUR}. Ã€ {ORIG}, il fait {TEMP_O}, {SKY_O}. Ã€ {DEST}, il fait {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Nous reviendrons vers vous pour le service Ã  bord. Merci.",
      "en": "Ladies and gentlemen, we have just taken off from {ORIG}. This is your cabin manager{NOM} speaking. Our flight time to {DEST} will be about {DUR}. In {ORIG}, it is {TEMP_O}, {SKY_O}. In {DEST}, it is {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} We will be back shortly with the service. Thank you.",
-     "de": "Meine Damen und Herren, wir sind soeben von {ORIG} gestartet. Hier spricht Ihr Kabinenchef{NOM}. Unsere Flugzeit nach {DEST} beträgt etwa {DUR}. In {ORIG} ist es {TEMP_O}, {SKY_O}. In {DEST} ist es {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Wir kommen in Kürze mit dem Service zu Ihnen zurück. Vielen Dank.",
-     "es": "Señoras y señores, acabamos de despegar de {ORIG}. Les habla el jefe de cabina{NOM}. Nuestro tiempo de vuelo hasta {DEST} será de aproximadamente {DUR}. En {ORIG} hace {TEMP_O}, {SKY_O}. En {DEST} hace {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Volveremos pronto con el servicio a bordo. Gracias."},
-    {"fr": "Mesdames et messieurs, le commandant et tout l'équipage vous souhaitent un agréable vol sur ce {EW} {FN}. Nous serons à {DEST} dans environ {DUR}. Là-bas, la température est de {TEMP_D}, avec {WIND_D}. {COMMENT_D} {TURB} Vous pouvez dès maintenant ranger les manteaux, ou les ressortir, selon la destination. Merci.",
+     "de": "Meine Damen und Herren, wir sind soeben von {ORIG} gestartet. Hier spricht Ihr Kabinenchef{NOM}. Unsere Flugzeit nach {DEST} betrÃ¤gt etwa {DUR}. In {ORIG} ist es {TEMP_O}, {SKY_O}. In {DEST} ist es {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Wir kommen in KÃ¼rze mit dem Service zu Ihnen zurÃ¼ck. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, acabamos de despegar de {ORIG}. Les habla el jefe de cabina{NOM}. Nuestro tiempo de vuelo hasta {DEST} serÃ¡ de aproximadamente {DUR}. En {ORIG} hace {TEMP_O}, {SKY_O}. En {DEST} hace {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Volveremos pronto con el servicio a bordo. Gracias."},
+    {"fr": "Mesdames et messieurs, le commandant et tout l'Ã©quipage vous souhaitent un agrÃ©able vol sur ce {EW} {FN}. Nous serons Ã  {DEST} dans environ {DUR}. LÃ -bas, la tempÃ©rature est de {TEMP_D}, avec {WIND_D}. {COMMENT_D} {TURB} Vous pouvez dÃ¨s maintenant ranger les manteaux, ou les ressortir, selon la destination. Merci.",
      "en": "Ladies and gentlemen, the captain and the whole crew wish you a pleasant flight on this {EW} {FN}. We will be in {DEST} in about {DUR}. There, the temperature is {TEMP_D}, with {WIND_D}. {COMMENT_D} {TURB} You may put your coats away now, or take them out again, depending on the destination. Thank you.",
-     "de": "Meine Damen und Herren, der Kapitän und die gesamte Crew wünschen Ihnen einen angenehmen Flug mit diesem {EW} {FN}. Wir werden in etwa {DUR} in {DEST} sein. Dort beträgt die Temperatur {TEMP_D}, mit {WIND_D}. {COMMENT_D} {TURB} Sie können Ihre Mäntel jetzt wegräumen, oder wieder herausholen, je nach Reiseziel. Vielen Dank.",
-     "es": "Señoras y señores, el comandante y toda la tripulación les desean un agradable vuelo en este {EW} {FN}. Estaremos en {DEST} en aproximadamente {DUR}. Allí, la temperatura es de {TEMP_D}, con {WIND_D}. {COMMENT_D} {TURB} Ya pueden guardar los abrigos, o volver a sacarlos, según el destino. Gracias."},
-    {"fr": "Mesdames et messieurs, nous sommes en route pour {DEST}. Le vol durera environ {DUR}. Au départ de {ORIG}, nous avions {TEMP_O}. À l'arrivée, ce sera plutôt {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Installez-vous confortablement, nous passerons bientôt dans les allées. Merci.",
+     "de": "Meine Damen und Herren, der KapitÃ¤n und die gesamte Crew wÃ¼nschen Ihnen einen angenehmen Flug mit diesem {EW} {FN}. Wir werden in etwa {DUR} in {DEST} sein. Dort betrÃ¤gt die Temperatur {TEMP_D}, mit {WIND_D}. {COMMENT_D} {TURB} Sie kÃ¶nnen Ihre MÃ¤ntel jetzt wegrÃ¤umen, oder wieder herausholen, je nach Reiseziel. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, el comandante y toda la tripulaciÃ³n les desean un agradable vuelo en este {EW} {FN}. Estaremos en {DEST} en aproximadamente {DUR}. AllÃ­, la temperatura es de {TEMP_D}, con {WIND_D}. {COMMENT_D} {TURB} Ya pueden guardar los abrigos, o volver a sacarlos, segÃºn el destino. Gracias."},
+    {"fr": "Mesdames et messieurs, nous sommes en route pour {DEST}. Le vol durera environ {DUR}. Au dÃ©part de {ORIG}, nous avions {TEMP_O}. Ã€ l'arrivÃ©e, ce sera plutÃ´t {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Installez-vous confortablement, nous passerons bientÃ´t dans les allÃ©es. Merci.",
      "en": "Ladies and gentlemen, we are on our way to {DEST}. The flight will last about {DUR}. When we left {ORIG}, it was {TEMP_O}. On arrival, it will be more like {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Please make yourselves comfortable, we will be coming through the aisles shortly. Thank you.",
-     "de": "Meine Damen und Herren, wir befinden uns auf dem Weg nach {DEST}. Der Flug wird etwa {DUR} dauern. Beim Abflug von {ORIG} hatten wir {TEMP_O}. Bei der Ankunft wird es eher {TEMP_D}, {SKY_D} sein. {COMMENT_D} {TURB} Machen Sie es sich bequem, wir kommen bald durch die Gänge. Vielen Dank.",
-     "es": "Señoras y señores, estamos en ruta hacia {DEST}. El vuelo durará aproximadamente {DUR}. Al salir de {ORIG}, teníamos {TEMP_O}. A la llegada, será más bien {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} Pónganse cómodos, pronto pasaremos por los pasillos. Gracias."},
+     "de": "Meine Damen und Herren, wir befinden uns auf dem Weg nach {DEST}. Der Flug wird etwa {DUR} dauern. Beim Abflug von {ORIG} hatten wir {TEMP_O}. Bei der Ankunft wird es eher {TEMP_D}, {SKY_D} sein. {COMMENT_D} {TURB} Machen Sie es sich bequem, wir kommen bald durch die GÃ¤nge. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, estamos en ruta hacia {DEST}. El vuelo durarÃ¡ aproximadamente {DUR}. Al salir de {ORIG}, tenÃ­amos {TEMP_O}. A la llegada, serÃ¡ mÃ¡s bien {TEMP_D}, {SKY_D}. {COMMENT_D} {TURB} PÃ³nganse cÃ³modos, pronto pasaremos por los pasillos. Gracias."},
 ])
 add("SeatbeltSignOn", True, False, [
-    {"fr": "Mesdames et messieurs, le signal ceinture vient d'être allumé. Merci de regagner votre place et d'attacher votre ceinture.",
+    {"fr": "Mesdames et messieurs, le signal ceinture vient d'Ãªtre allumÃ©. Merci de regagner votre place et d'attacher votre ceinture.",
      "en": "Ladies and gentlemen, the seat belt sign has been switched on. Please return to your seat and fasten your seat belt.",
-     "de": "Meine Damen und Herren, das Anschnallzeichen wurde soeben eingeschaltet. Bitte kehren Sie zu Ihrem Platz zurück und schließen Sie Ihren Sicherheitsgurt.",
-     "es": "Señoras y señores, se ha encendido la señal de abrocharse el cinturón. Regresen a su asiento y abróchense el cinturón."},
-    {"fr": "Mesdames et messieurs, nous traversons une zone un peu agitée. Ce n'est pas nous, c'est l'air. Veuillez regagner votre place et attacher votre ceinture.",
+     "de": "Meine Damen und Herren, das Anschnallzeichen wurde soeben eingeschaltet. Bitte kehren Sie zu Ihrem Platz zurÃ¼ck und schlieÃŸen Sie Ihren Sicherheitsgurt.",
+     "es": "SeÃ±oras y seÃ±ores, se ha encendido la seÃ±al de abrocharse el cinturÃ³n. Regresen a su asiento y abrÃ³chense el cinturÃ³n."},
+    {"fr": "Mesdames et messieurs, nous traversons une zone un peu agitÃ©e. Ce n'est pas nous, c'est l'air. Veuillez regagner votre place et attacher votre ceinture.",
      "en": "Ladies and gentlemen, we are passing through a slightly bumpy area. It is not us, it is the air. Please return to your seat and fasten your seat belt.",
-     "de": "Meine Damen und Herren, wir fliegen durch eine etwas unruhige Zone. Das sind nicht wir, das ist die Luft. Bitte kehren Sie zu Ihrem Platz zurück und schließen Sie Ihren Sicherheitsgurt.",
-     "es": "Señoras y señores, estamos atravesando una zona algo turbulenta. No somos nosotros, es el aire. Regresen a su asiento y abróchense el cinturón."},
-    {"fr": "Mesdames et messieurs, le commandant a allumé le signal ceinture. Merci de rester assis, ceinture attachée.",
+     "de": "Meine Damen und Herren, wir fliegen durch eine etwas unruhige Zone. Das sind nicht wir, das ist die Luft. Bitte kehren Sie zu Ihrem Platz zurÃ¼ck und schlieÃŸen Sie Ihren Sicherheitsgurt.",
+     "es": "SeÃ±oras y seÃ±ores, estamos atravesando una zona algo turbulenta. No somos nosotros, es el aire. Regresen a su asiento y abrÃ³chense el cinturÃ³n."},
+    {"fr": "Mesdames et messieurs, le commandant a allumÃ© le signal ceinture. Merci de rester assis, ceinture attachÃ©e.",
      "en": "Ladies and gentlemen, the captain has switched on the seat belt sign. Please remain seated with your seat belt fastened.",
-     "de": "Meine Damen und Herren, der Kapitän hat das Anschnallzeichen eingeschaltet. Bitte bleiben Sie sitzen, mit angelegtem Sicherheitsgurt.",
-     "es": "Señoras y señores, el comandante ha encendido la señal de cinturón. Permanezcan sentados, con el cinturón abrochado."},
+     "de": "Meine Damen und Herren, der KapitÃ¤n hat das Anschnallzeichen eingeschaltet. Bitte bleiben Sie sitzen, mit angelegtem Sicherheitsgurt.",
+     "es": "SeÃ±oras y seÃ±ores, el comandante ha encendido la seÃ±al de cinturÃ³n. Permanezcan sentados, con el cinturÃ³n abrochado."},
 ])
 add("SeatbeltSignOff", True, False, [
-    {"fr": "Mesdames et messieurs, le signal ceinture est éteint. Vous pouvez circuler dans la cabine. Nous vous recommandons toutefois de garder votre ceinture attachée lorsque vous êtes assis.",
+    {"fr": "Mesdames et messieurs, le signal ceinture est Ã©teint. Vous pouvez circuler dans la cabine. Nous vous recommandons toutefois de garder votre ceinture attachÃ©e lorsque vous Ãªtes assis.",
      "en": "Ladies and gentlemen, the seat belt sign has been switched off. You may now move around the cabin. However, we recommend that you keep your seat belt fastened while seated.",
-     "de": "Meine Damen und Herren, das Anschnallzeichen ist nun aus. Sie können sich in der Kabine bewegen. Wir empfehlen jedoch, den Sicherheitsgurt angelegt zu lassen, solange Sie sitzen.",
-     "es": "Señoras y señores, la señal de cinturón se ha apagado. Pueden moverse por la cabina. Sin embargo, les recomendamos mantener el cinturón abrochado mientras estén sentados."},
-    {"fr": "Mesdames et messieurs, le signal ceinture vient de s'éteindre. Vous êtes libres de vous déplacer. Les toilettes sont à l'avant et à l'arrière, et oui, il y aura la queue.",
+     "de": "Meine Damen und Herren, das Anschnallzeichen ist nun aus. Sie kÃ¶nnen sich in der Kabine bewegen. Wir empfehlen jedoch, den Sicherheitsgurt angelegt zu lassen, solange Sie sitzen.",
+     "es": "SeÃ±oras y seÃ±ores, la seÃ±al de cinturÃ³n se ha apagado. Pueden moverse por la cabina. Sin embargo, les recomendamos mantener el cinturÃ³n abrochado mientras estÃ©n sentados."},
+    {"fr": "Mesdames et messieurs, le signal ceinture vient de s'Ã©teindre. Vous Ãªtes libres de vous dÃ©placer. Les toilettes sont Ã  l'avant et Ã  l'arriÃ¨re, et oui, il y aura la queue.",
      "en": "Ladies and gentlemen, the seat belt sign is now off. You are free to move around. The lavatories are at the front and the rear, and yes, there will be a queue.",
-     "de": "Meine Damen und Herren, das Anschnallzeichen ist soeben ausgegangen. Sie können sich frei bewegen. Die Toiletten befinden sich vorne und hinten, und ja, es wird eine Warteschlange geben.",
-     "es": "Señoras y señores, la señal de cinturón se acaba de apagar. Son libres de desplazarse. Los baños están en la parte delantera y trasera, y sí, habrá cola."},
+     "de": "Meine Damen und Herren, das Anschnallzeichen ist soeben ausgegangen. Sie kÃ¶nnen sich frei bewegen. Die Toiletten befinden sich vorne und hinten, und ja, es wird eine Warteschlange geben.",
+     "es": "SeÃ±oras y seÃ±ores, la seÃ±al de cinturÃ³n se acaba de apagar. Son libres de desplazarse. Los baÃ±os estÃ¡n en la parte delantera y trasera, y sÃ­, habrÃ¡ cola."},
 ])
 add("CabinService", True, False, [
-    {"fr": "Mesdames et messieurs, le service à bord va commencer. {REPAS}{SCENARIO}",
+    {"fr": "Mesdames et messieurs, le service Ã  bord va commencer. {REPAS}{SCENARIO}",
      "en": "Ladies and gentlemen, the cabin service will begin shortly. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, der Bordservice beginnt in Kürze. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, el servicio a bordo va a comenzar. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, notre équipage va maintenant commencer le service à bord. Merci de relever votre tablette. {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, der Bordservice beginnt in KÃ¼rze. {REPAS}{SCENARIO}",
+     "es": "SeÃ±oras y seÃ±ores, el servicio a bordo va a comenzar. {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, notre Ã©quipage va maintenant commencer le service Ã  bord. Merci de relever votre tablette. {REPAS}{SCENARIO}",
      "en": "Ladies and gentlemen, our crew will now begin the cabin service. Please lower your tray table. {REPAS}{SCENARIO}",
      "de": "Meine Damen und Herren, unsere Crew beginnt nun mit dem Bordservice. Bitte klappen Sie Ihren Tisch hoch. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, nuestra tripulación va a comenzar ahora el servicio a bordo. Suban su mesita. {REPAS}{SCENARIO}"},
+     "es": "SeÃ±oras y seÃ±ores, nuestra tripulaciÃ³n va a comenzar ahora el servicio a bordo. Suban su mesita. {REPAS}{SCENARIO}"},
 ])
 add("DescentStarted", True, True, [
-    {"fr": "Mesdames et messieurs, nous avons commencé notre descente vers {DEST}. À {DEST}, il fait {TEMP_D}, {SKY_D}. {COMMENT_D} Veuillez regagner votre siège, attacher votre ceinture, relever votre tablette et remettre votre dossier en position verticale. Merci.",
+    {"fr": "Mesdames et messieurs, nous avons commencÃ© notre descente vers {DEST}. Ã€ {DEST}, il fait {TEMP_D}, {SKY_D}. {COMMENT_D} Veuillez regagner votre siÃ¨ge, attacher votre ceinture, relever votre tablette et remettre votre dossier en position verticale. Merci.",
      "en": "Ladies and gentlemen, we have started our descent into {DEST}. In {DEST}, it is {TEMP_D}, {SKY_D}. {COMMENT_D} Please return to your seat, fasten your seat belt, stow your tray table, and return your seat back to the upright position. Thank you.",
-     "de": "Meine Damen und Herren, wir haben unseren Sinkflug nach {DEST} begonnen. In {DEST} ist es {TEMP_D}, {SKY_D}. {COMMENT_D} Bitte kehren Sie zu Ihrem Sitz zurück, schließen Sie Ihren Sicherheitsgurt, klappen Sie Ihren Tisch hoch und stellen Sie Ihre Rückenlehne aufrecht. Vielen Dank.",
-     "es": "Señoras y señores, hemos iniciado nuestro descenso hacia {DEST}. En {DEST} hace {TEMP_D}, {SKY_D}. {COMMENT_D} Regresen a su asiento, abróchense el cinturón, suban su mesita y coloquen el respaldo en posición vertical. Gracias."},
-    {"fr": "Mesdames et messieurs, nous allons bientôt atterrir à {DEST}. Température au sol : {TEMP_D}, avec {WIND_D}. Merci de regagner votre place, de relever votre tablette, et de ranger tout ce qui traîne. Oui, cela inclut le dernier biscuit.",
+     "de": "Meine Damen und Herren, wir haben unseren Sinkflug nach {DEST} begonnen. In {DEST} ist es {TEMP_D}, {SKY_D}. {COMMENT_D} Bitte kehren Sie zu Ihrem Sitz zurÃ¼ck, schlieÃŸen Sie Ihren Sicherheitsgurt, klappen Sie Ihren Tisch hoch und stellen Sie Ihre RÃ¼ckenlehne aufrecht. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, hemos iniciado nuestro descenso hacia {DEST}. En {DEST} hace {TEMP_D}, {SKY_D}. {COMMENT_D} Regresen a su asiento, abrÃ³chense el cinturÃ³n, suban su mesita y coloquen el respaldo en posiciÃ³n vertical. Gracias."},
+    {"fr": "Mesdames et messieurs, nous allons bientÃ´t atterrir Ã  {DEST}. TempÃ©rature au sol : {TEMP_D}, avec {WIND_D}. Merci de regagner votre place, de relever votre tablette, et de ranger tout ce qui traÃ®ne. Oui, cela inclut le dernier biscuit.",
      "en": "Ladies and gentlemen, we will shortly be landing in {DEST}. The temperature on the ground is {TEMP_D}, with {WIND_D}. Please return to your seat, stow your tray table, and put away anything lying around. Yes, that includes the last biscuit.",
-     "de": "Meine Damen und Herren, wir werden in Kürze in {DEST} landen. Bodentemperatur: {TEMP_D}, mit {WIND_D}. Bitte kehren Sie zu Ihrem Platz zurück, klappen Sie Ihren Tisch hoch, und verstauen Sie alles, was herumliegt. Ja, das schließt den letzten Keks mit ein.",
-     "es": "Señoras y señores, en breve aterrizaremos en {DEST}. Temperatura en tierra: {TEMP_D}, con {WIND_D}. Regresen a su asiento, suban su mesita, y guarden todo lo que tengan suelto. Sí, eso incluye la última galleta."},
-    {"fr": "Mesdames et messieurs, nous entamons notre descente vers {DEST}. Il fait {TEMP_D} là-bas, {SKY_D}. Veuillez attacher votre ceinture, relever votre dossier, et vérifier que votre tablette est bien rangée. Merci de votre coopération.",
+     "de": "Meine Damen und Herren, wir werden in KÃ¼rze in {DEST} landen. Bodentemperatur: {TEMP_D}, mit {WIND_D}. Bitte kehren Sie zu Ihrem Platz zurÃ¼ck, klappen Sie Ihren Tisch hoch, und verstauen Sie alles, was herumliegt. Ja, das schlieÃŸt den letzten Keks mit ein.",
+     "es": "SeÃ±oras y seÃ±ores, en breve aterrizaremos en {DEST}. Temperatura en tierra: {TEMP_D}, con {WIND_D}. Regresen a su asiento, suban su mesita, y guarden todo lo que tengan suelto. SÃ­, eso incluye la Ãºltima galleta."},
+    {"fr": "Mesdames et messieurs, nous entamons notre descente vers {DEST}. Il fait {TEMP_D} lÃ -bas, {SKY_D}. Veuillez attacher votre ceinture, relever votre dossier, et vÃ©rifier que votre tablette est bien rangÃ©e. Merci de votre coopÃ©ration.",
      "en": "Ladies and gentlemen, we are beginning our descent into {DEST}. It is {TEMP_D} down there, {SKY_D}. Please fasten your seat belt, return your seat back to the upright position, and check that your tray table is stowed. Thank you for your cooperation.",
-     "de": "Meine Damen und Herren, wir beginnen unseren Sinkflug nach {DEST}. Dort ist es {TEMP_D}, {SKY_D}. Bitte schließen Sie Ihren Sicherheitsgurt, stellen Sie Ihre Rückenlehne aufrecht, und überprüfen Sie, dass Ihr Tisch hochgeklappt ist. Vielen Dank für Ihre Mitarbeit.",
-     "es": "Señoras y señores, comenzamos nuestro descenso hacia {DEST}. Allí hace {TEMP_D}, {SKY_D}. Abróchense el cinturón, coloquen el respaldo en posición vertical, y comprueben que su mesita está plegada. Gracias por su cooperación."},
+     "de": "Meine Damen und Herren, wir beginnen unseren Sinkflug nach {DEST}. Dort ist es {TEMP_D}, {SKY_D}. Bitte schlieÃŸen Sie Ihren Sicherheitsgurt, stellen Sie Ihre RÃ¼ckenlehne aufrecht, und Ã¼berprÃ¼fen Sie, dass Ihr Tisch hochgeklappt ist. Vielen Dank fÃ¼r Ihre Mitarbeit.",
+     "es": "SeÃ±oras y seÃ±ores, comenzamos nuestro descenso hacia {DEST}. AllÃ­ hace {TEMP_D}, {SKY_D}. AbrÃ³chense el cinturÃ³n, coloquen el respaldo en posiciÃ³n vertical, y comprueben que su mesita estÃ¡ plegada. Gracias por su cooperaciÃ³n."},
 ])
 add("AfterLanding", True, True, [
-    {"fr": "Mesdames et messieurs, bienvenue à {DEST}, où la température est de {TEMP_D}. Pour votre sécurité, restez assis, ceinture attachée, jusqu'à l'arrêt complet de l'appareil et l'extinction du signal. Nous vous remercions d'avoir choisi {EW}.",
+    {"fr": "Mesdames et messieurs, bienvenue Ã  {DEST}, oÃ¹ la tempÃ©rature est de {TEMP_D}. Pour votre sÃ©curitÃ©, restez assis, ceinture attachÃ©e, jusqu'Ã  l'arrÃªt complet de l'appareil et l'extinction du signal. Nous vous remercions d'avoir choisi {EW}.",
      "en": "Ladies and gentlemen, welcome to {DEST}, where the temperature is {TEMP_D}. For your safety, please remain seated with your seat belt fastened until the aircraft has come to a complete stop and the sign has been switched off. Thank you for choosing {EW}.",
-     "de": "Meine Damen und Herren, willkommen in {DEST}, wo die Temperatur {TEMP_D} beträgt. Zu Ihrer Sicherheit bleiben Sie bitte sitzen, mit angelegtem Sicherheitsgurt, bis das Flugzeug vollständig zum Stillstand gekommen ist und das Zeichen erlischt. Wir danken Ihnen, dass Sie sich für {EW} entschieden haben.",
-     "es": "Señoras y señores, bienvenidos a {DEST}, donde la temperatura es de {TEMP_D}. Por su seguridad, permanezcan sentados, con el cinturón abrochado, hasta la parada completa de la aeronave y el apagado de la señal. Les agradecemos haber elegido {EW}."},
-    {"fr": "Mesdames et messieurs, nous venons d'atterrir à {DEST}. {COMMENT_D} Restez assis jusqu'à l'extinction du signal ceinture. Nous savons que vous êtes tous pressés de récupérer vos bagages, mais ils ne partiront pas sans vous. Merci.",
+     "de": "Meine Damen und Herren, willkommen in {DEST}, wo die Temperatur {TEMP_D} betrÃ¤gt. Zu Ihrer Sicherheit bleiben Sie bitte sitzen, mit angelegtem Sicherheitsgurt, bis das Flugzeug vollstÃ¤ndig zum Stillstand gekommen ist und das Zeichen erlischt. Wir danken Ihnen, dass Sie sich fÃ¼r {EW} entschieden haben.",
+     "es": "SeÃ±oras y seÃ±ores, bienvenidos a {DEST}, donde la temperatura es de {TEMP_D}. Por su seguridad, permanezcan sentados, con el cinturÃ³n abrochado, hasta la parada completa de la aeronave y el apagado de la seÃ±al. Les agradecemos haber elegido {EW}."},
+    {"fr": "Mesdames et messieurs, nous venons d'atterrir Ã  {DEST}. {COMMENT_D} Restez assis jusqu'Ã  l'extinction du signal ceinture. Nous savons que vous Ãªtes tous pressÃ©s de rÃ©cupÃ©rer vos bagages, mais ils ne partiront pas sans vous. Merci.",
      "en": "Ladies and gentlemen, we have just landed in {DEST}. {COMMENT_D} Please remain seated until the seat belt sign has been switched off. We know you are all keen to collect your luggage, but it will not leave without you. Thank you.",
-     "de": "Meine Damen und Herren, wir sind soeben in {DEST} gelandet. {COMMENT_D} Bleiben Sie sitzen, bis das Anschnallzeichen erlischt. Wir wissen, dass Sie alle Ihr Gepäck holen möchten, aber es wird nicht ohne Sie abfahren. Vielen Dank.",
-     "es": "Señoras y señores, acabamos de aterrizar en {DEST}. {COMMENT_D} Permanezcan sentados hasta que se apague la señal de cinturón. Sabemos que todos tienen prisa por recoger su equipaje, pero no se irá sin ustedes. Gracias."},
-    {"fr": "Mesdames et messieurs, bienvenue à {DEST}. Il y fait {TEMP_D}, {SKY_D}. Merci de rester assis, ceinture attachée, jusqu'à l'arrêt complet. Ensuite, vous pourrez vous lever tous en même temps, comme d'habitude.",
+     "de": "Meine Damen und Herren, wir sind soeben in {DEST} gelandet. {COMMENT_D} Bleiben Sie sitzen, bis das Anschnallzeichen erlischt. Wir wissen, dass Sie alle Ihr GepÃ¤ck holen mÃ¶chten, aber es wird nicht ohne Sie abfahren. Vielen Dank.",
+     "es": "SeÃ±oras y seÃ±ores, acabamos de aterrizar en {DEST}. {COMMENT_D} Permanezcan sentados hasta que se apague la seÃ±al de cinturÃ³n. Sabemos que todos tienen prisa por recoger su equipaje, pero no se irÃ¡ sin ustedes. Gracias."},
+    {"fr": "Mesdames et messieurs, bienvenue Ã  {DEST}. Il y fait {TEMP_D}, {SKY_D}. Merci de rester assis, ceinture attachÃ©e, jusqu'Ã  l'arrÃªt complet. Ensuite, vous pourrez vous lever tous en mÃªme temps, comme d'habitude.",
      "en": "Ladies and gentlemen, welcome to {DEST}. It is {TEMP_D} there, {SKY_D}. Please remain seated with your seat belt fastened until we have come to a complete stop. After that, you may all stand up at the same time, as usual.",
-     "de": "Meine Damen und Herren, willkommen in {DEST}. Dort ist es {TEMP_D}, {SKY_D}. Bitte bleiben Sie sitzen, mit angelegtem Sicherheitsgurt, bis zum vollständigen Stillstand. Danach können Sie alle gleichzeitig aufstehen, wie immer.",
-     "es": "Señoras y señores, bienvenidos a {DEST}. Allí hace {TEMP_D}, {SKY_D}. Permanezcan sentados, con el cinturón abrochado, hasta la parada completa. Después, podrán levantarse todos a la vez, como siempre."},
+     "de": "Meine Damen und Herren, willkommen in {DEST}. Dort ist es {TEMP_D}, {SKY_D}. Bitte bleiben Sie sitzen, mit angelegtem Sicherheitsgurt, bis zum vollstÃ¤ndigen Stillstand. Danach kÃ¶nnen Sie alle gleichzeitig aufstehen, wie immer.",
+     "es": "SeÃ±oras y seÃ±ores, bienvenidos a {DEST}. AllÃ­ hace {TEMP_D}, {SKY_D}. Permanezcan sentados, con el cinturÃ³n abrochado, hasta la parada completa. DespuÃ©s, podrÃ¡n levantarse todos a la vez, como siempre."},
 ])
 add("DeboardingStarted", True, True, [
-    {"fr": "Mesdames et messieurs, le débarquement commence. N'oubliez pas vos affaires personnelles. Et si vous avez laissé quelque chose derrière vous, ce n'est pas grave, vous reviendrez. Merci d'avoir volé avec {EW}, nous espérons vous revoir très bientôt.",
+    {"fr": "Mesdames et messieurs, le dÃ©barquement commence. N'oubliez pas vos affaires personnelles. Et si vous avez laissÃ© quelque chose derriÃ¨re vous, ce n'est pas grave, vous reviendrez. Merci d'avoir volÃ© avec {EW}, nous espÃ©rons vous revoir trÃ¨s bientÃ´t.",
      "en": "Ladies and gentlemen, deboarding is now starting. Please do not forget your personal belongings. And if you leave something behind, never mind, you will come back. Thank you for flying with {EW}, we hope to see you again very soon.",
-     "de": "Meine Damen und Herren, das Aussteigen beginnt. Vergessen Sie bitte nicht Ihre persönlichen Gegenstände. Und falls Sie etwas zurücklassen, ist das nicht schlimm, Sie kommen ja wieder. Vielen Dank, dass Sie mit {EW} geflogen sind, wir hoffen, Sie bald wiederzusehen.",
-     "es": "Señoras y señores, comienza el desembarque. No olviden sus pertenencias personales. Y si dejan algo atrás, no se preocupen, volverán. Gracias por volar con {EW}, esperamos verles de nuevo muy pronto."},
-    {"fr": "Mesdames et messieurs, vous pouvez maintenant quitter l'appareil. Merci de vérifier que vous avez bien tout pris, y compris vos enfants. L'équipage de ce vol {FN} vous remercie, et vous souhaite un excellent séjour à {DEST}.",
+     "de": "Meine Damen und Herren, das Aussteigen beginnt. Vergessen Sie bitte nicht Ihre persÃ¶nlichen GegenstÃ¤nde. Und falls Sie etwas zurÃ¼cklassen, ist das nicht schlimm, Sie kommen ja wieder. Vielen Dank, dass Sie mit {EW} geflogen sind, wir hoffen, Sie bald wiederzusehen.",
+     "es": "SeÃ±oras y seÃ±ores, comienza el desembarque. No olviden sus pertenencias personales. Y si dejan algo atrÃ¡s, no se preocupen, volverÃ¡n. Gracias por volar con {EW}, esperamos verles de nuevo muy pronto."},
+    {"fr": "Mesdames et messieurs, vous pouvez maintenant quitter l'appareil. Merci de vÃ©rifier que vous avez bien tout pris, y compris vos enfants. L'Ã©quipage de ce vol {FN} vous remercie, et vous souhaite un excellent sÃ©jour Ã  {DEST}.",
      "en": "Ladies and gentlemen, you may now leave the aircraft. Please check that you have everything, including your children. The crew of flight {FN} thanks you, and wishes you an excellent stay in {DEST}.",
-     "de": "Meine Damen und Herren, Sie können das Flugzeug nun verlassen. Bitte überprüfen Sie, dass Sie alles mitgenommen haben, einschließlich Ihrer Kinder. Die Crew von Flug {FN} bedankt sich und wünscht Ihnen einen ausgezeichneten Aufenthalt in {DEST}.",
-     "es": "Señoras y señores, ya pueden abandonar la aeronave. Comprueben que han recogido todo, incluidos sus hijos. La tripulación del vuelo {FN} les agradece y les desea una excelente estancia en {DEST}."},
-    {"fr": "Mesdames et messieurs, le débarquement est ouvert. Nous vous remercions de votre confiance, et espérons que le vol vous a plu. Bon séjour à {DEST}, et à bientôt sur {EW}.",
+     "de": "Meine Damen und Herren, Sie kÃ¶nnen das Flugzeug nun verlassen. Bitte Ã¼berprÃ¼fen Sie, dass Sie alles mitgenommen haben, einschlieÃŸlich Ihrer Kinder. Die Crew von Flug {FN} bedankt sich und wÃ¼nscht Ihnen einen ausgezeichneten Aufenthalt in {DEST}.",
+     "es": "SeÃ±oras y seÃ±ores, ya pueden abandonar la aeronave. Comprueben que han recogido todo, incluidos sus hijos. La tripulaciÃ³n del vuelo {FN} les agradece y les desea una excelente estancia en {DEST}."},
+    {"fr": "Mesdames et messieurs, le dÃ©barquement est ouvert. Nous vous remercions de votre confiance, et espÃ©rons que le vol vous a plu. Bon sÃ©jour Ã  {DEST}, et Ã  bientÃ´t sur {EW}.",
      "en": "Ladies and gentlemen, deboarding has begun. Thank you for your trust, and we hope you enjoyed the flight. Enjoy your stay in {DEST}, and see you soon on {EW}.",
-     "de": "Meine Damen und Herren, das Aussteigen ist freigegeben. Wir danken Ihnen für Ihr Vertrauen und hoffen, dass Ihnen der Flug gefallen hat. Einen schönen Aufenthalt in {DEST}, und bis bald bei {EW}.",
-     "es": "Señoras y señores, el desembarque está abierto. Les agradecemos su confianza, y esperamos que hayan disfrutado del vuelo. Buena estancia en {DEST}, y hasta pronto en {EW}."},
+     "de": "Meine Damen und Herren, das Aussteigen ist freigegeben. Wir danken Ihnen fÃ¼r Ihr Vertrauen und hoffen, dass Ihnen der Flug gefallen hat. Einen schÃ¶nen Aufenthalt in {DEST}, und bis bald bei {EW}.",
+     "es": "SeÃ±oras y seÃ±ores, el desembarque estÃ¡ abierto. Les agradecemos su confianza, y esperamos que hayan disfrutado del vuelo. Buena estancia en {DEST}, y hasta pronto en {EW}."},
 ])
 add("DeboardingComplete", False, False, [
-    {"fr": "Équipage, débarquement terminé. Merci pour votre travail. Nous vérifions la cabine et préparons le prochain vol.",
+    {"fr": "Ã‰quipage, dÃ©barquement terminÃ©. Merci pour votre travail. Nous vÃ©rifions la cabine et prÃ©parons le prochain vol.",
      "en": "Crew, deboarding is complete. Thank you for your work. We will check the cabin and prepare for the next flight.",
-     "de": "Crew, Ausstieg abgeschlossen. Danke für eure Arbeit. Wir überprüfen die Kabine und bereiten den nächsten Flug vor.",
-     "es": "Tripulación, desembarque finalizado. Gracias por su trabajo. Revisamos la cabina y preparamos el próximo vuelo."},
-    {"fr": "Mesdames et messieurs de l'équipage, tous les passagers ont quitté l'appareil. Merci, et bon repos.",
+     "de": "Crew, Ausstieg abgeschlossen. Danke fÃ¼r eure Arbeit. Wir Ã¼berprÃ¼fen die Kabine und bereiten den nÃ¤chsten Flug vor.",
+     "es": "TripulaciÃ³n, desembarque finalizado. Gracias por su trabajo. Revisamos la cabina y preparamos el prÃ³ximo vuelo."},
+    {"fr": "Mesdames et messieurs de l'Ã©quipage, tous les passagers ont quittÃ© l'appareil. Merci, et bon repos.",
      "en": "Crew, all passengers have left the aircraft. Thank you, and have a good rest.",
      "de": "Liebe Crew, alle Passagiere haben das Flugzeug verlassen. Danke, und gute Erholung.",
-     "es": "Compañeros de tripulación, todos los pasajeros han abandonado la aeronave. Gracias, y buen descanso."},
+     "es": "CompaÃ±eros de tripulaciÃ³n, todos los pasajeros han abandonado la aeronave. Gracias, y buen descanso."},
 ])
 add("Decompression", True, False, [
-    {"fr": "Mesdames et messieurs, la pression dans la cabine a chuté. Restez calmes. Les masques à oxygène sont tombés. Tirez sur le masque le plus proche, placez-le sur le nez et la bouche, et respirez normalement. Éteignez toute cigarette. Restez assis, et suivez les instructions de l'équipage.",
+    {"fr": "Mesdames et messieurs, la pression dans la cabine a chutÃ©. Restez calmes. Les masques Ã  oxygÃ¨ne sont tombÃ©s. Tirez sur le masque le plus proche, placez-le sur le nez et la bouche, et respirez normalement. Ã‰teignez toute cigarette. Restez assis, et suivez les instructions de l'Ã©quipage.",
      "en": "Ladies and gentlemen, the cabin pressure has dropped. Please remain calm. The oxygen masks have been released. Pull the nearest mask towards you, place it over your nose and mouth, and breathe normally. Extinguish all cigarettes. Remain seated, and follow the instructions of the crew.",
-     "de": "Meine Damen und Herren, der Kabinendruck ist gefallen. Bleiben Sie ruhig. Die Sauerstoffmasken sind herabgefallen. Ziehen Sie an der nächsten Maske, setzen Sie sie auf Nase und Mund, und atmen Sie normal. Löschen Sie alle Zigaretten. Bleiben Sie sitzen, und folgen Sie den Anweisungen der Crew.",
-     "es": "Señoras y señores, la presión en la cabina ha caído. Mantengan la calma. Las máscaras de oxígeno han caído. Tire de la máscara más cercana, colóquela sobre la nariz y la boca, y respire con normalidad. Apaguen todos los cigarrillos. Permanezcan sentados, y sigan las instrucciones de la tripulación."},
-    {"fr": "Mesdames et messieurs, nous avons une perte de pression en cabine. Les masques à oxygène sont tombés. Placez le masque sur votre visage, et respirez normalement. Si vous accompagnez un enfant, équipez-vous d'abord vous-même. Restez calmes et assis.",
+     "de": "Meine Damen und Herren, der Kabinendruck ist gefallen. Bleiben Sie ruhig. Die Sauerstoffmasken sind herabgefallen. Ziehen Sie an der nÃ¤chsten Maske, setzen Sie sie auf Nase und Mund, und atmen Sie normal. LÃ¶schen Sie alle Zigaretten. Bleiben Sie sitzen, und folgen Sie den Anweisungen der Crew.",
+     "es": "SeÃ±oras y seÃ±ores, la presiÃ³n en la cabina ha caÃ­do. Mantengan la calma. Las mÃ¡scaras de oxÃ­geno han caÃ­do. Tire de la mÃ¡scara mÃ¡s cercana, colÃ³quela sobre la nariz y la boca, y respire con normalidad. Apaguen todos los cigarrillos. Permanezcan sentados, y sigan las instrucciones de la tripulaciÃ³n."},
+    {"fr": "Mesdames et messieurs, nous avons une perte de pression en cabine. Les masques Ã  oxygÃ¨ne sont tombÃ©s. Placez le masque sur votre visage, et respirez normalement. Si vous accompagnez un enfant, Ã©quipez-vous d'abord vous-mÃªme. Restez calmes et assis.",
      "en": "Ladies and gentlemen, we have lost cabin pressure. The oxygen masks have been released. Place the mask over your face, and breathe normally. If you are travelling with a child, fit your own mask first. Please remain calm and seated.",
      "de": "Meine Damen und Herren, wir haben einen Druckverlust in der Kabine. Die Sauerstoffmasken sind herabgefallen. Setzen Sie die Maske auf Ihr Gesicht, und atmen Sie normal. Wenn Sie ein Kind begleiten, setzen Sie zuerst Ihre eigene Maske auf. Bleiben Sie ruhig und sitzen.",
-     "es": "Señoras y señores, hemos perdido presión en la cabina. Las máscaras de oxígeno han caído. Colóquese la máscara sobre el rostro, y respire con normalidad. Si acompaña a un niño, póngase primero su propia máscara. Mantengan la calma y permanezcan sentados."},
+     "es": "SeÃ±oras y seÃ±ores, hemos perdido presiÃ³n en la cabina. Las mÃ¡scaras de oxÃ­geno han caÃ­do. ColÃ³quese la mÃ¡scara sobre el rostro, y respire con normalidad. Si acompaÃ±a a un niÃ±o, pÃ³ngase primero su propia mÃ¡scara. Mantengan la calma y permanezcan sentados."},
 ])
 
 # ------------------------------------------------------------------ outils audio
@@ -902,9 +939,9 @@ def lire_plan():
         return json.loads(r.read().decode("utf-8"))
 
 
-# ------------------------------------------------------------------ génération
+# ------------------------------------------------------------------ gÃ©nÃ©ration
 async def genere(profils, types, ctx, sortie_dir):
-    """types = liste d'entrées T ; écrit sortie_dir/<Type>[n].ogg"""
+    """types = liste d'entrÃ©es T ; Ã©crit sortie_dir/<Type>[n].ogg"""
     os.makedirs(sortie_dir, exist_ok=True)
     tmpb = os.path.join(WORK, "tmp"); os.makedirs(tmpb, exist_ok=True)
     silence(os.path.join(tmpb, "s1.wav"), 0.35); silence(os.path.join(tmpb, "s2.wav"), 0.6)
@@ -1070,7 +1107,7 @@ def signature_meteo(m):
 
 
 def combler(tout, profils):
-    """pas de trou dans la numérotation des variantes : une variante manquante est remplacée par la n°1"""
+    """pas de trou dans la numÃ©rotation des variantes : une variante manquante est remplacÃ©e par la nÂ°1"""
     for entree in T:
         for n in range(1, len(profils) + 1):
             cible = os.path.join(tout, "%s[%d].ogg" % (entree[0], n))
@@ -1078,7 +1115,7 @@ def combler(tout, profils):
                 src = os.path.join(tout, "%s[1].ogg" % entree[0])
                 if os.path.exists(src):
                     shutil.copy2(src, cible)
-                    print("  variante comblée :", os.path.basename(cible))
+                    print("  variante comblÃ©e :", os.path.basename(cible))
 
 
 def publie_selection(profils, ctx, noms):
@@ -1096,7 +1133,7 @@ def publie_selection(profils, ctx, noms):
 
 
 def types_meteo(marqueurs):
-    """noms des annonces dont le texte cite la météo (marqueurs {TEMP_D…} ou {TEMP_O…})"""
+    """noms des annonces dont le texte cite la mÃ©tÃ©o (marqueurs {TEMP_Dâ€¦} ou {TEMP_Oâ€¦})"""
     def textes(x):
         if isinstance(x, str):
             yield x
@@ -1119,7 +1156,7 @@ def executer(argv):
     fabrique_carillon(os.path.join(WORK, "carillon.wav"))
     verrou = os.path.join(WORK, "verrou.txt")
     if os.path.exists(verrou) and time.time() - os.path.getmtime(verrou) < 1800:
-        print("Une génération est déjà en cours (déjà lancée)."); return
+        print("Une gÃ©nÃ©ration est dÃ©jÃ  en cours (dÃ©jÃ  lancÃ©e)."); return
     open(verrou, "w").write(str(os.getpid()))
     statut = os.path.join(WORK, "_STATUT_INSTALLATION.txt")
     def _statut(texte):
@@ -1145,15 +1182,15 @@ def executer(argv):
             mode = "vol"
         elif "--meteo" in args and msfs_actif() and time.time() - etat.get("meteo_t", 0) >= 600:
             m_d = metar_frais(icao_d)
-            nouvelle = time.time() - etat.get("meteo_t", 0) > 3 * 3600      # premier contrôle d'une nouvelle session de simulateur
+            nouvelle = time.time() - etat.get("meteo_t", 0) > 3 * 3600      # premier contrÃ´le d'une nouvelle session de simulateur
             etat["meteo_t"] = time.time()
             if m_d and (nouvelle or signature_meteo(parse_metar(m_d)) != etat.get("meteo_sig")):
                 mode = "meteo"
                 etat["meteo_origine"] = nouvelle
             else:
-                ecrit_etat(etat); print("Météo inchangée (déjà vérifiée)."); return
+                ecrit_etat(etat); print("MÃ©tÃ©o inchangÃ©e (dÃ©jÃ  vÃ©rifiÃ©e)."); return
         if mode is None:
-            print("Plan déjà traité."); return
+            print("Plan dÃ©jÃ  traitÃ©."); return
         profils, res = asyncio.run(profils_valides())
         m_o, m_d = metar_frais(icao_o), metar_frais(icao_d)
         ctx = contexte(plan, m_o, m_d)
@@ -1168,14 +1205,14 @@ def executer(argv):
         t0 = time.time()
         if mode == "types":
             ok, tot = publie_selection(profils, ctx, noms)
-            print("régénéré :", ok, "/", tot)
+            print("rÃ©gÃ©nÃ©rÃ© :", ok, "/", tot)
             ecrit_etat(dict(etat, quand=time.strftime("%d/%m/%Y %H:%M")))
         elif mode == "meteo":
             a_faire = types_meteo(("{TEMP_D", "{SKY_D", "{WIND_D", "{COMMENT_D"))
             if etat.get("meteo_origine"):
                 a_faire += [n for n in types_meteo(("{TEMP_O", "{SKY_O", "{WIND_O", "{COMMENT_O")) if n not in a_faire]
             ok, tot = publie_selection(profils, ctx, a_faire)
-            print("météo mise à jour (%s) :" % ", ".join(a_faire), ok, "/", tot)
+            print("mÃ©tÃ©o mise Ã  jour (%s) :" % ", ".join(a_faire), ok, "/", tot)
             ecrit_etat(dict(etat, meteo_sig=sig, meteo_t=time.time(), meteo_origine=False, metar_d=m_d, metar_o=m_o, quand=time.strftime("%d/%m/%Y %H:%M")))
         else:
             generique = os.path.join(WORK, "generique"); perso = os.path.join(WORK, "vol")
@@ -1190,7 +1227,7 @@ def executer(argv):
             if "--tout" in args or not os.path.isdir(generique) or incomplet:
                 shutil.rmtree(generique, ignore_errors=True)
                 ok, tot = asyncio.run(genere(profils, [e for e in T if not e[2]], ctx, generique))
-                print("génériques :", ok, "/", tot)
+                print("gÃ©nÃ©riques :", ok, "/", tot)
             shutil.rmtree(perso, ignore_errors=True)
             ok, tot = asyncio.run(genere(profils, [e for e in T if e[2]], ctx, perso))
             print("du vol :", ok, "/", tot)
@@ -1204,7 +1241,7 @@ def executer(argv):
                         "de": icao_o, "vers": icao_d, "nb_profils": len(profils), "fichiers": len(os.listdir(tout)),
                         "quand": time.strftime("%d/%m/%Y %H:%M"), "duree_s": int(time.time() - t0),
                         "meteo_sig": sig, "meteo_t": time.time(), "metar_d": m_d})
-        print("Pack publié dans", PKG, "en", int(time.time() - t0), "s")
+        print("Pack publiÃ© dans", PKG, "en", int(time.time() - t0), "s")
         print("=" * 70)
         print("INSTALLATION TERMINEE - vous pouvez fermer cette fenetre / lancer MSFS")
         print("INSTALLATION COMPLETE - you can close this window / start MSFS")
@@ -1299,7 +1336,7 @@ def surveillance_simconnect(arreter=None):
 
 def _chemin_exe_xml():
     """Retrouve EXE.xml de MSFS 2024 a partir du dossier Community choisi
-    (meme principe que pour Carriere/Copilote sur le PC de developpement) :
+    (meme principe que pour Carriere/Copilote sur ce PC) :
     - version Microsoft Store : ...\\LocalCache\\Packages\\Community -> ...\\LocalCache\\EXE.xml
     - version Steam/Boite     : ...\\Microsoft Flight Simulator 2024\\Community -> ...\\exe.xml
     Renvoie None si le dossier Community ne ressemble a aucun des deux."""
