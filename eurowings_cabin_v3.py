@@ -1515,13 +1515,14 @@ def _demarre_serveur_config_toolbar(arreter):
                 "codes_compagnie": ",".join(CODES),
                 "langue": LANG,
                 "nom_equipage": NOM_EQUIPAGE,
+                "simbrief_id": SIMBRIEF_ID,
             })
 
         def do_POST(self):
             if self.path.split("?", 1)[0].rstrip("/") != "/config":
                 self._repond_json(404, {"erreur": "introuvable"})
                 return
-            global COMPAGNIE, CODES, LANG, SECONDE_LANGUE, PROFILS, NOM_EQUIPAGE
+            global COMPAGNIE, CODES, LANG, SECONDE_LANGUE, PROFILS, NOM_EQUIPAGE, SIMBRIEF_ID
             try:
                 taille = int(self.headers.get("Content-Length", "0") or "0")
                 brut = self.rfile.read(taille) if taille > 0 else b"{}"
@@ -1536,6 +1537,9 @@ def _demarre_serveur_config_toolbar(arreter):
             if langue_nouvelle not in {v[0] for v in LANGUES.values()}:
                 langue_nouvelle = LANG
             nom_nouveau = str(entree.get("nom_equipage") or "").strip()
+            simbrief_nouveau = str(entree.get("simbrief_id") or SIMBRIEF_ID).strip()
+            if not simbrief_nouveau.isdigit():
+                simbrief_nouveau = SIMBRIEF_ID
 
             COMPAGNIE = compagnie_nouvelle
             CODES = codes_nouveaux
@@ -1543,12 +1547,14 @@ def _demarre_serveur_config_toolbar(arreter):
             SECONDE_LANGUE = None if LANG == "en" else "en"
             PROFILS = PROFILS_PAR_LANGUE[LANG]
             NOM_EQUIPAGE = nom_nouveau
+            SIMBRIEF_ID = simbrief_nouveau
 
             cfg = _charge_config()
             cfg["compagnie"] = COMPAGNIE
             cfg["codes_compagnie"] = ",".join(CODES)
             cfg["langue"] = LANG
             cfg["nom_equipage"] = NOM_EQUIPAGE
+            cfg["simbrief_id"] = SIMBRIEF_ID
             try:
                 _sauve_config(cfg)
             except Exception:
