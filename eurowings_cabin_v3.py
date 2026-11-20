@@ -463,26 +463,7 @@ def contexte(plan, metar_o=None, metar_d=None):
     EW = {"fr": "Eurowings", "en": "Eurowings", "de": "Eurowings", "es": "Eurowings"}
     nom = " (%s)" % NOM_EQUIPAGE if NOM_EQUIPAGE else ""
 
-    # --- retard : compare l'heure estimee de depart a l'heure prevue ---
-    retard_min = 0
-    try:
-        sched_out = int(tm.get("sched_out") or 0)
-        est_out = int(tm.get("est_out") or sched_out)
-        if sched_out:
-            retard_min = max(0, (est_out - sched_out) // 60)
-    except Exception:
-        retard_min = 0
-    if retard_min >= 15:
-        RETARD = {
-            "fr": " Nous sommes dÃ©solÃ©s de vous informer que notre dÃ©part est retardÃ© d'environ %d minutes ; nous ferons de notre mieux pour rattraper ce retard en vol. Merci de votre patience." % retard_min,
-            "en": " We are sorry to inform you that our departure is delayed by about %d minutes; we will do our best to make up for the delay during the flight. Thank you for your patience." % retard_min,
-            "de": " Wir bedauern, Ihnen mitteilen zu mÃ¼ssen, dass sich unser Abflug um etwa %d Minuten verzÃ¶gert; wir werden unser Bestes tun, um die VerspÃ¤tung wÃ¤hrend des Flugs aufzuholen. Vielen Dank fÃ¼r Ihre Geduld." % retard_min,
-            "es": " Lamentamos informarles de que nuestra salida se retrasa unos %d minutos; haremos lo posible por recuperar el retraso durante el vuelo. Gracias por su paciencia." % retard_min,
-        }
-    else:
-        RETARD = {L: "" for L in LANGS}
-
-    # --- repas : menu + boissons selon l'heure locale REELLE a l'origine ---
+    # --- heure reelle courante (SimConnect ZULU TIME), repli SimBrief ---
     try:
         tz_o = float(str(o.get("timezone") or 0))
     except Exception:
@@ -511,6 +492,34 @@ def contexte(plan, metar_o=None, metar_d=None):
         else:
             minute_locale = 12 * 60
     heure_locale = minute_locale // 60
+
+    # --- retard : compare l'heure PREVUE de depart a l'heure REELLE ---
+    retard_min = 0
+    try:
+        sched_out = int(tm.get("sched_out") or 0)
+        if sched_out:
+            _tl_prevu = time.gmtime(sched_out + int(tz_o * 3600))
+            minute_prevu = _tl_prevu.tm_hour * 60 + _tl_prevu.tm_min
+            if heure_utc_reelle is not None:
+                ecart = (minute_locale - minute_prevu) % 1440
+                if ecart <= 720:
+                    retard_min = ecart
+            else:
+                est_out = int(tm.get("est_out") or sched_out)
+                retard_min = max(0, (est_out - sched_out) // 60)
+    except Exception:
+        retard_min = 0
+    if retard_min >= 15:
+        RETARD = {
+            "fr": " Nous sommes dÃ©solÃ©s de vous informer que notre dÃ©part est retardÃ© d'environ %d minutes ; nous ferons de notre mieux pour rattraper ce retard en vol. Merci de votre patience." % retard_min,
+            "en": " We are sorry to inform you that our departure is delayed by about %d minutes; we will do our best to make up for the delay during the flight. Thank you for your patience." % retard_min,
+            "de": " Wir bedauern, Ihnen mitteilen zu mÃ¼ssen, dass sich unser Abflug um etwa %d Minuten verzÃ¶gert; wir werden unser Bestes tun, um die VerspÃ¤tung wÃ¤hrend des Flugs aufzuholen. Vielen Dank fÃ¼r Ihre Geduld." % retard_min,
+            "es": " Lamentamos informarles de que nuestra salida se retrasa unos %d minutos; haremos lo posible por recuperar el retraso durante el vuelo. Gracias por su paciencia." % retard_min,
+        }
+    else:
+        RETARD = {L: "" for L in LANGS}
+
+    # --- repas : menu + boissons selon l'heure locale REELLE a l'origine ---
     nuit_embarquement = (minute_locale >= 22 * 60 or minute_locale < 6 * 60)
     if nuit_embarquement:
         AMBIANCE_NUIT = {
