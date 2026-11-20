@@ -127,10 +127,30 @@ def premiere_configuration():
     return cfg
 
 
-if len(sys.argv) > 1:
+if len(sys.argv) > 1 and "--auto-msfs" not in sys.argv[1:]:
     _CFG = premiere_configuration()
 else:
-    _CFG = _charge_config()  # mode GUI (double-clic) : pas de prompts console, la fenetre s'en occupe
+    # mode GUI (double-clic), ou --auto-msfs (lance par MSFS, sans console ni
+    # entree standard) : jamais de prompts interactifs ici.
+    _CFG = _charge_config()
+    if "--auto-msfs" in sys.argv[1:]:
+        _manque = []
+        if not _CFG.get("simbrief_id"):
+            _manque.append("identifiant SimBrief")
+        if not _CFG.get("community") or not os.path.isdir(_CFG.get("community", "")):
+            _manque.append("dossier Community")
+        if _manque:
+            try:
+                with open(os.path.join(HERE, "erreur_configuration.txt"), "w", encoding="utf-8") as _f:
+                    _f.write(
+                        "Eurowings Cabin Announcements V3 : configuration incomplete (%s).\n"
+                        "Lancez le programme une premiere fois sans MSFS (double-clic sur\n"
+                        "l'executable) pour faire la configuration via la fenetre, puis\n"
+                        "relancez MSFS 2024.\n" % ", ".join(_manque)
+                    )
+            except Exception:
+                pass
+            sys.exit(0)
 SIMBRIEF_ID = _CFG.get("simbrief_id", "")
 COMMUNITY = _CFG.get("community", "")
 NOM_EQUIPAGE = (_CFG.get("nom_equipage") or "").strip()
