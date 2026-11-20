@@ -30,9 +30,9 @@ def _recurso(nom):
     base = getattr(_sys, "_MEIPASS", HERE)
     return os.path.join(base, nom)
 CONFIG_PATH = os.path.join(HERE, "config_cabine.json")
-CODES = ["EWG", "EWL"]          # dossiers du pack cote Fenix (indicatif Eurowings + code compagnie)
 NB_PARALLELE = 5
 VERSION = "1.2.0"
+COMPAGNIES_CONNUES = ('Aegean', 'Aer Lingus', 'Aeroflot', 'Afriqiyah Airways', 'Aigle Azur', 'Air Albania', 'Air Berlin', 'Air Cairo', 'Air Calin', 'Air Canada', 'Air China', 'Air Corsica', "Air Cote d'Ivoire", 'Air France', 'Air India', 'Air India Express', 'Air Jamaica', 'Air Juneyao', 'Air New Zealand', 'Air Nippon', 'Air Serbia', 'AirAsia', 'AirTran Airways', 'Alaska Airlines', 'Alitalia', 'All Leisure Airways', 'Allegiant Air', 'America West Airlines', 'American Airlines', 'ANA', 'Animawings', 'Ansett Australia', 'Astra Airlines', 'Austrian', 'Avianca', 'Azal', 'Azores Airlines', 'BA Euroflyer', 'Balkan Holidays', 'BCM Airlines', 'Berniq Airways', 'Bmi British Midland', 'Braniff Airways', 'British Airways', 'British Midland', 'Brussels Airlines', 'Bulgaria Airlines', 'Bulgaria Air', 'Caledonian Airways', 'Canada Jetlines', 'Canair', 'Cathay Dragon', 'Cebu Pacific Air', 'China Eastern', 'China Express', 'China Southern', 'Citilink', 'Condor', 'Constellation International', 'Corendon Airlines', 'Croatia Airlines', 'Cubana', 'Cyprus Airways', 'Delta Air Lines', 'Discover Airlines', 'Dragonair', 'Dutchbird', 'easyJet', 'easyJet Europe', 'easyJet Switzerland', 'Edelweiss', 'Egypt Air', 'Electra Airways', 'Etihad Airways', 'Eurofly', 'Eurowings', 'Eurowings Europe', 'EVA Air', 'Finnair', 'Flitestar Airways', 'Fly Air41 Airways', 'Fly Lili', 'Flyadeal', 'FlyArystan', 'Flynas', 'Flyniki', 'FlyOne', 'Frontier Airlines', 'Germanwings', 'Getjet', 'GlobalX', 'Hisky Europe', 'HK Express', 'Hong Kong Airlines', 'Iberia', 'Iberia Express', 'Iberworld Airlines', 'Indigo', 'Indonesia AirAsia', 'Iran Air', 'Iran Airtours', 'Iraqi Airways', 'ITA Airways', 'Jazeera Airways', 'JetBlue', 'Jetstar', 'Jetstar Asia', 'Jetstar Japan', 'JMC Air', 'LATAM Argentina', 'LATAM Brasil', 'LATAM Chile', 'LEAV', 'Level Europe', 'LTE International Airlines', 'LTU', 'LTU Austria', 'Lucky Air', 'Lufthansa', 'Martinair', 'Middle East Airlines', 'Midways Airlines', 'Monarch Airlines', 'Nile Air', 'Northwest Airlines', 'Nouvelair', 'Orange2Fly', 'Pegasus', 'Philippines AirAsia', 'PIA', 'QantasLink', 'Qatar Airways', 'Royal Jordanian', 'S7 Airlines', 'SAS', 'Saudi Arabian Airlines', 'Sichuan Airlines', 'SilkAir', 'Sobelair', 'Solomon', 'South African Airways', 'Spirit Airlines', 'SriLankan', 'Star East', 'StarFlyer', 'Sundair', 'Swiss', 'Syrian Air', 'TAP Air Portugal', 'Ted', 'Thai AirAsia', 'Thai Airways', 'Tigerair', 'Titan Airways', 'Trans-Meridian', 'TransAer International Airlines', 'Transavia', 'Translift Airways', 'TUI fly Belgium', 'TUI fly Netherlands', 'Turkish Airlines', 'United Airlines', 'Ural Airlines', 'US Airways', 'Uzbekistan Airways', 'Virgin America', 'Virgin Atlantic Airways', 'Virgin Sun', 'Viva Aerobus', 'Volotea', 'Vueling', 'White Airways', 'Wizz Air', 'Yamal Airlines')
 
 
 def _candidats_community():
@@ -134,7 +134,16 @@ else:
 SIMBRIEF_ID = _CFG.get("simbrief_id", "")
 COMMUNITY = _CFG.get("community", "")
 NOM_EQUIPAGE = (_CFG.get("nom_equipage") or "").strip()
-PKG = os.path.join(COMMUNITY, "fnx-airline-packs-eurowings") if COMMUNITY else ""
+COMPAGNIE = (_CFG.get("compagnie") or "Eurowings").strip() or "Eurowings"
+CODES = [c.strip().upper() for c in (_CFG.get("codes_compagnie") or "EWG,EWL").split(",") if c.strip()] or ["EWG", "EWL"]
+PKG = os.path.join(COMMUNITY, "fnx-cabin-announcements-cleardeck") if COMMUNITY else ""
+if COMMUNITY:
+    _ancien_pkg = os.path.join(COMMUNITY, "fnx-airline-packs-eurowings")
+    if os.path.isdir(_ancien_pkg) and _ancien_pkg != PKG:
+        try:
+            shutil.rmtree(_ancien_pkg)
+        except Exception:
+            pass
 print("Eurowings Cabin Announcements V3 - version", VERSION)
 
 # ------------------------------------------------------------------ voix
@@ -460,7 +469,7 @@ def contexte(plan, metar_o=None, metar_d=None):
     wd = vent_parle(md)
     cm = commentaire(md)
     tu = turbulence_parle(plan)
-    EW = {"fr": "Eurowings", "en": "Eurowings", "de": "Eurowings", "es": "Eurowings"}
+    EW = {L: COMPAGNIE for L in LANGS}
     nom = " (%s)" % NOM_EQUIPAGE if NOM_EQUIPAGE else ""
 
     # --- heure reelle courante (SimConnect ZULU TIME), repli SimBrief ---
@@ -1059,7 +1068,7 @@ def ecrit_layout():
 
 def ecrit_manifest():
     os.makedirs(PKG, exist_ok=True)
-    m = {"dependencies": [], "content_type": "MISC", "title": "Eurowings cabin announcements (Fenix A320 airline packs)",
+    m = {"dependencies": [], "content_type": "MISC", "title": "Cabin announcements (Fenix A320 airline packs)",
          "manufacturer": "Cleardeck Studio", "creator": "Cleardeck Studio", "package_version": "1.0.0", "minimum_game_version": "1.0.0",
          "release_notes": {"neutral": {"LastUpdate": "", "OlderHistory": ""}}}
     with open(os.path.join(PKG, "manifest.json"), "w", encoding="utf-8") as fh:
@@ -1537,16 +1546,25 @@ def lancer_gui():
     cb = ttk.Combobox(cadre, textvariable=v_langue, values=list(libelles_langue.values()), state="readonly")
     cb.grid(row=2, column=1, columnspan=2, sticky="we", pady=6)
 
-    ttk.Label(cadre, text="Nom du commandant / chef de cabine (facultatif)\nCaptain / cabin manager's name (optional)").grid(row=3, column=0, sticky="w", pady=6)
+    ttk.Label(cadre, text="Compagnie aerienne / Airline").grid(row=3, column=0, sticky="w", pady=6)
+    v_compagnie = tk.StringVar(value=COMPAGNIE)
+    cb_compagnie = ttk.Combobox(cadre, textvariable=v_compagnie, values=COMPAGNIES_CONNUES)
+    cb_compagnie.grid(row=3, column=1, columnspan=2, sticky="we", pady=6)
+
+    ttk.Label(cadre, text="Code(s) ICAO compagnie, separes par une virgule\n(voir la livree Fenix installee) / Airline ICAO\ncode(s), comma-separated (see your Fenix livery)").grid(row=4, column=0, sticky="w", pady=6)
+    v_code = tk.StringVar(value=",".join(CODES))
+    ttk.Entry(cadre, textvariable=v_code).grid(row=4, column=1, columnspan=2, sticky="we", pady=6)
+
+    ttk.Label(cadre, text="Nom du commandant / chef de cabine (facultatif)\nCaptain / cabin manager's name (optional)").grid(row=5, column=0, sticky="w", pady=6)
     v_nom = tk.StringVar(value=NOM_EQUIPAGE)
-    ttk.Entry(cadre, textvariable=v_nom).grid(row=3, column=1, columnspan=2, sticky="we", pady=6)
+    ttk.Entry(cadre, textvariable=v_nom).grid(row=5, column=1, columnspan=2, sticky="we", pady=6)
 
     bouton = ttk.Button(cadre, text="Installation / Install")
-    bouton.grid(row=4, column=0, columnspan=3, pady=(10, 0), sticky="we")
+    bouton.grid(row=6, column=0, columnspan=3, pady=(10, 0), sticky="we")
 
     journal = scrolledtext.ScrolledText(cadre, height=12, state="disabled", wrap="word")
-    journal.grid(row=6, column=0, columnspan=3, sticky="nsew", pady=(14, 0))
-    cadre.rowconfigure(6, weight=1)
+    journal.grid(row=8, column=0, columnspan=3, sticky="nsew", pady=(14, 0))
+    cadre.rowconfigure(8, weight=1)
 
     dernier_est_progres = [False]
 
@@ -1602,14 +1620,19 @@ def lancer_gui():
             return
         libelle_choisi = v_langue.get()
         cle_choisie = next((k for k in cles if libelles_langue[k] == libelle_choisi), cle_defaut)
+        compagnie_choisie = v_compagnie.get().strip() or "Eurowings"
+        codes_choisis = [c.strip().upper() for c in v_code.get().split(",") if c.strip()] or ["EWG", "EWL"]
 
-        global SIMBRIEF_ID, COMMUNITY, NOM_EQUIPAGE, LANG, PKG
+        global SIMBRIEF_ID, COMMUNITY, NOM_EQUIPAGE, LANG, PKG, COMPAGNIE, CODES
         SIMBRIEF_ID = pid
         COMMUNITY = dossier
         NOM_EQUIPAGE = v_nom.get().strip()
         LANG = LANGUES[cle_choisie][0]
-        PKG = os.path.join(COMMUNITY, "fnx-airline-packs-eurowings")
-        _sauve_config({"simbrief_id": SIMBRIEF_ID, "community": COMMUNITY, "langue": LANG, "nom_equipage": NOM_EQUIPAGE})
+        COMPAGNIE = compagnie_choisie
+        CODES = codes_choisis
+        PKG = os.path.join(COMMUNITY, "fnx-cabin-announcements-cleardeck")
+        _sauve_config({"simbrief_id": SIMBRIEF_ID, "community": COMMUNITY, "langue": LANG, "nom_equipage": NOM_EQUIPAGE,
+                        "compagnie": COMPAGNIE, "codes_compagnie": ",".join(CODES)})
 
         bouton.config(state="disabled", text="Installation en cours... / Installing...")
         journal.config(state="normal"); journal.delete("1.0", "end"); journal.config(state="disabled")
