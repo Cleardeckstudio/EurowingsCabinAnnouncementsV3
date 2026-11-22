@@ -1,4 +1,4 @@
-# -*- mode: python ; coding: utf-8 -*-
+﻿# -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files
 from PyInstaller.utils.hooks import collect_submodules
 from PyInstaller.utils.hooks import collect_all
@@ -15,6 +15,10 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('SimConnect')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 datas += [('avatar_cleardeck.png', '.')]
+datas += [('mobiflight_module/layout.json', 'mobiflight_module')]
+datas += [('mobiflight_module/manifest.json', 'mobiflight_module')]
+datas += [('mobiflight_module/ContentInfo/mobiflight-event-module/Thumbnail.jpg', 'mobiflight_module/ContentInfo/mobiflight-event-module')]
+datas += [('mobiflight_module/modules/MobiFlightWasmModule.wasm', 'mobiflight_module/modules')]
 
 
 a = Analysis(
@@ -53,3 +57,4 @@ exe = EXE(
     entitlements_file=None,
     icon='cleardeck_icon.ico',
 )
+
