@@ -682,6 +682,225 @@ CORRECTIONS_PRONONCIATION_COMPAGNIE = {
     "ana": ", ANA",
 }
 
+# ------------------------------------------------------------------ services a bord par compagnie
+# Bibliotheque de phrases d'annonce reprenant le VRAI service a bord (restauration,
+# wifi/divertissement, programme de fidelite...) compagnie par compagnie, identifiee
+# automatiquement par la livree active (meme cle que CORRECTIONS_PRONONCIATION_COMPAGNIE,
+# normalisee via re.sub(r"[^a-z0-9]", "", nom.lower())).
+#
+# Regle volontaire : on ne cite JAMAIS les noms commerciaux de services/programmes
+# (ex. pas de "Wings Bistro", "Wings Connect", "FlyNet", "High Life Cafe", "Avios",
+# "Miles & More", "SAFt", "Meal Deal"...) car la synthese vocale les retranscrit
+# souvent mal. Seuls les vrais noms de plats/produits (langage courant, ex. "Butter
+# Chicken", "wrap", "croque-monsieur") sont repris tels quels.
+#
+# Une seule phrase est piochee au hasard par generation (cf. contexte()) : on ne
+# recite jamais tout le service d'un coup, exactement comme pour Eurowings.
+SERVICES_BORD = {
+    "eurowings": {
+        "wifi": {
+            "fr": " Pour patienter, une connexion Wi-Fi et un programme de divertissement sont proposés en option, directement depuis votre propre appareil.",
+            "en": " To keep you entertained, a Wi-Fi connection and an entertainment programme are available as a paid option, straight from your own device.",
+            "de": " Zu Ihrer Unterhaltung bieten wir Ihnen optional eine WLAN-Verbindung und ein Unterhaltungsprogramm direkt auf Ihrem eigenen Gerät an.",
+            "es": " Para su entretenimiento, ofrecemos opcionalmente una conexión Wi-Fi y un programa de entretenimiento directamente desde su propio dispositivo.",
+        },
+        "annonces": [
+            {"fr": "Notre équipage vous propose un menu complet avec un plat, une boisson et un dessert, à prix avantageux.",
+             "en": "Our crew offers a complete meal deal with a dish, a drink and a dessert, at a great price.",
+             "de": "Unsere Crew bietet Ihnen ein komplettes Menü mit Gericht, Getränk und Dessert zu einem attraktiven Preis.",
+             "es": "Nuestra tripulación les ofrece un menú completo con un plato, una bebida y un postre, a un precio ventajoso."},
+            {"fr": "Notre carte propose entre autres un döner au poulet mariné, des frites, ou un butter chicken au riz basmati.",
+             "en": "Our menu includes a marinated chicken döner, fries, or a butter chicken with basmati rice.",
+             "de": "Unsere Karte bietet unter anderem einen Döner mit mariniertem Hähnchen, Pommes, oder ein Butter Chicken mit Basmatireis.",
+             "es": "Nuestra carta incluye entre otros un döner de pollo marinado, patatas fritas, o un butter chicken con arroz basmati."},
+            {"fr": "Pour rappel, le règlement à bord se fait uniquement par carte bancaire ou paiement sans contact.",
+             "en": "Please note that payment on board is by card or contactless only.",
+             "de": "Bitte beachten Sie, dass die Zahlung an Bord nur per Karte oder kontaktlos möglich ist.",
+             "es": "Recuerden que el pago a bordo se realiza únicamente con tarjeta o sin contacto."},
+            {"fr": "Petite astuce : apportez votre propre tasse réutilisable, et bénéficiez d'une réduction sur une boisson chaude.",
+             "en": "A small tip: bring your own reusable cup, and get a discount on a hot drink.",
+             "de": "Ein kleiner Tipp: Bringen Sie Ihre eigene wiederverwendbare Tasse mit, und erhalten Sie einen Rabatt auf ein heißes Getränk.",
+             "es": "Un pequeño consejo: traigan su propia taza reutilizable, y obtengan un descuento en una bebida caliente."},
+            {"fr": "Pour les voyageurs sensibles à l'environnement, notre carte propose aussi une contribution volontaire au carburant durable.",
+             "en": "For environmentally-minded travellers, our menu also offers a voluntary contribution towards sustainable fuel.",
+             "de": "Für umweltbewusste Reisende bietet unsere Karte auch einen freiwilligen Beitrag zu nachhaltigem Treibstoff.",
+             "es": "Para los viajeros sensibles al medio ambiente, nuestra carta también ofrece una contribución voluntaria al combustible sostenible."},
+            {"fr": "En cette fin de journée, notre équipage vous propose aussi une offre apéritive, bière et snack salé à prix réduit.",
+             "en": "At this time of day, our crew also offers an evening deal, a beer and a savoury snack at a reduced price.",
+             "de": "Zu dieser Tageszeit bietet Ihnen unsere Crew auch ein Feierabend-Angebot: ein Bier und einen herzhaften Snack zum reduzierten Preis.",
+             "es": "A esta hora del día, nuestra tripulación también ofrece una oferta de tarde: una cerveza y un tentempié salado a precio reducido."},
+            {"fr": "Pensez à consulter notre magazine de bord, glissé dans la pochette devant vous, pour découvrir nos destinations.",
+             "en": "Feel free to browse our in-flight magazine, tucked in the seat pocket in front of you, to discover our destinations.",
+             "de": "Werfen Sie gerne einen Blick in unser Bordmagazin in der Sitztasche vor Ihnen, und entdecken Sie unsere Reiseziele.",
+             "es": "No duden en consultar nuestra revista de a bordo, en el bolsillo del asiento delante de ustedes, para descubrir nuestros destinos."},
+        ],
+    },
+    "transavia": {
+        "annonces": [
+            {"fr": "Pour bien commencer la journée, notre carte propose une offre petit-déjeuner avec jus d'orange, viennoiserie et café, à prix avantageux.",
+             "en": "To start the day well, our menu offers a breakfast deal with orange juice, pastry and coffee, at a great price.",
+             "de": "Für einen guten Start in den Tag bietet unsere Karte ein Frühstücksangebot mit Orangensaft, Gebäck und Kaffee zu einem attraktiven Preis.",
+             "es": "Para empezar bien el día, nuestra carta ofrece una oferta de desayuno con zumo de naranja, bollería y café, a un precio ventajoso."},
+            {"fr": "Petite faim ? Notre offre salée réunit un wrap, un soda et des chips pour une pause gourmande.",
+             "en": "Feeling peckish? Our savoury deal brings together a wrap, a soda and some chips for a tasty break.",
+             "de": "Kleiner Hunger? Unser herzhaftes Angebot vereint einen Wrap, ein Softdrink und Chips für eine leckere Pause.",
+             "es": "¿Un poco de hambre? Nuestra oferta salada reúne un wrap, un refresco y patatas fritas para una pausa gourmet."},
+            {"fr": "Notre carte propose entre autres une pizza margarita, un croque-monsieur, ou un wrap au poulet.",
+             "en": "Our menu includes a margherita pizza, a ham and cheese toastie, or a chicken wrap.",
+             "de": "Unsere Karte bietet unter anderem eine Pizza Margherita, einen Toast mit Schinken und Käse, oder einen Wrap mit Hähnchen.",
+             "es": "Nuestra carta incluye entre otros una pizza margarita, un sándwich mixto, o un wrap de pollo."},
+            {"fr": "Pensez-y : à partir de plusieurs articles achetés sur notre carte, une remise s'applique automatiquement.",
+             "en": "Worth knowing: buy several items from our menu and a discount is applied automatically.",
+             "de": "Zur Erinnerung: Ab mehreren gekauften Artikeln unserer Karte wird automatisch ein Rabatt gewährt.",
+             "es": "Para tener en cuenta: a partir de varios artículos comprados en nuestra carta, se aplica un descuento automáticamente."},
+            {"fr": "Notre carte met à l'honneur des producteurs français, du café aux madeleines, en passant par nos vins certifiés agriculture durable.",
+             "en": "Our menu highlights French producers, from coffee to madeleines, including our sustainably certified wines.",
+             "de": "Unsere Karte würdigt französische Erzeuger, vom Kaffee bis zu den Madeleines, sowie unsere nachhaltig zertifizierten Weine.",
+             "es": "Nuestra carta destaca a productores franceses, desde el café hasta las madalenas, incluyendo nuestros vinos con certificación sostenible."},
+            {"fr": "Le règlement à bord est accepté par carte, sans contact, ou en espèces.",
+             "en": "Payment on board is accepted by card, contactless, or cash.",
+             "de": "Die Zahlung an Bord wird per Karte, kontaktlos, oder in bar akzeptiert.",
+             "es": "El pago a bordo se acepta con tarjeta, sin contacto, o en efectivo."},
+            {"fr": "Pour les envies shopping, notre catalogue boutique est disponible dans la pochette de votre siège.",
+             "en": "For some shopping, our boutique catalogue is available in your seat pocket.",
+             "de": "Für Shopping-Lust liegt unser Boutique-Katalog in Ihrer Sitztasche bereit.",
+             "es": "Para los que quieran ir de compras, nuestro catálogo de tienda está disponible en el bolsillo de su asiento."},
+            {"fr": "Pour accompagner la fin de votre vol, découvrez nos cocktails et vins à bord.",
+             "en": "To round off your flight, discover our cocktails and wines on board.",
+             "de": "Zum Ausklang Ihres Fluges entdecken Sie unsere Cocktails und Weine an Bord.",
+             "es": "Para acompañar el final de su vuelo, descubran nuestros cócteles y vinos a bordo."},
+        ],
+    },
+    "airfrance": {
+        "annonces": [
+            {"fr": "Notre équipage va maintenant débuter le service repas ; nous vous proposerons un choix entre plusieurs menus.",
+             "en": "Our crew will now begin the meal service; we will offer you a choice between several menus.",
+             "de": "Unsere Crew beginnt nun mit dem Essensservice; wir bieten Ihnen die Wahl zwischen mehreren Menüs.",
+             "es": "Nuestra tripulación va a comenzar ahora el servicio de comida; les propondremos elegir entre varios menús."},
+            {"fr": "Sur nos vols long-courriers, du champagne est proposé pendant le service, quelle que soit la cabine.",
+             "en": "On our long-haul flights, champagne is offered during the service, whatever your cabin.",
+             "de": "Auf unseren Langstreckenflügen wird während des Service Champagner angeboten, unabhängig von der Kabine.",
+             "es": "En nuestros vuelos de largo recorrido, se ofrece champán durante el servicio, sea cual sea la cabina."},
+            {"fr": "Nos repas sont élaborés avec des produits frais et de saison, originaires de producteurs français.",
+             "en": "Our meals are prepared with fresh, seasonal products, sourced from French producers.",
+             "de": "Unsere Mahlzeiten werden mit frischen, saisonalen Produkten von französischen Erzeugern zubereitet.",
+             "es": "Nuestras comidas se elaboran con productos frescos y de temporada, procedentes de productores franceses."},
+            {"fr": "Une option végétarienne est disponible pour l'ensemble de nos repas ; n'hésitez pas à la demander à notre équipage.",
+             "en": "A vegetarian option is available for all our meals; feel free to ask our crew.",
+             "de": "Für alle unsere Mahlzeiten ist eine vegetarische Option erhältlich; fragen Sie gerne unsere Crew.",
+             "es": "Hay disponible una opción vegetariana para todas nuestras comidas; no duden en pedirla a nuestra tripulación."},
+            {"fr": "Un menu spécialement conçu pour les enfants est disponible sur demande auprès de notre équipage.",
+             "en": "A menu specially designed for children is available on request from our crew.",
+             "de": "Ein speziell für Kinder konzipiertes Menü ist auf Anfrage bei unserer Crew erhältlich.",
+             "es": "Hay disponible, previa solicitud a nuestra tripulación, un menú especialmente concebido para niños."},
+            {"fr": "Dans quelques instants, votre repas vous sera servi avec le plus grand soin, à la française.",
+             "en": "In a few moments, your meal will be served to you with the greatest care, in French style.",
+             "de": "In Kürze wird Ihnen Ihre Mahlzeit mit größter Sorgfalt, auf französische Art, serviert.",
+             "es": "En unos instantes, se les servirá su comida con el mayor esmero, al estilo francés."},
+        ],
+    },
+    "lufthansa": {
+        "annonces": [
+            {"fr": "Notre équipage va vous servir une boisson et une petite douceur sucrée, offertes à bord.",
+             "en": "Our crew will serve you a drink and a little sweet treat, both complimentary on board.",
+             "de": "Unsere Crew serviert Ihnen ein Getränk und eine kleine Süßigkeit, beides an Bord inklusive.",
+             "es": "Nuestra tripulación les servirá una bebida y un pequeño dulce, ambos incluidos a bordo."},
+            {"fr": "En complément, un encas salé vous sera également proposé pendant ce service.",
+             "en": "In addition, a savoury snack will also be offered during this service.",
+             "de": "Ergänzend wird Ihnen während dieses Service auch ein herzhafter Snack angeboten.",
+             "es": "Además, también se les ofrecerá un tentempié salado durante este servicio."},
+            {"fr": "Le repas chaud sera servi sous peu, avec le choix entre deux plats.",
+             "en": "The hot meal will be served shortly, with a choice between two dishes.",
+             "de": "Die warme Mahlzeit wird in Kürze serviert, mit der Wahl zwischen zwei Gerichten.",
+             "es": "La comida caliente se servirá en breve, con opción a elegir entre dos platos."},
+            {"fr": "Les passagers ayant précommandé un menu spécial seront servis en priorité.",
+             "en": "Passengers who pre-ordered a special menu will be served first.",
+             "de": "Fluggäste, die ein Sondermenü vorbestellt haben, werden zuerst bedient.",
+             "es": "Los pasajeros que hayan reservado previamente un menú especial serán atendidos en primer lugar."},
+            {"fr": "Pour rester joignable pendant le vol, une messagerie Wi-Fi est accessible gratuitement sur votre appareil.",
+             "en": "To stay reachable during the flight, a free messaging Wi-Fi service is available on your device.",
+             "de": "Um während des Fluges erreichbar zu bleiben, steht Ihnen kostenlos ein WLAN-Nachrichtendienst auf Ihrem Gerät zur Verfügung.",
+             "es": "Para seguir localizables durante el vuelo, disponen gratuitamente de un servicio Wi-Fi de mensajería en su dispositivo."},
+            {"fr": "Pour une connexion complète, une offre Wi-Fi est également disponible en option à bord.",
+             "en": "For full connectivity, a Wi-Fi package is also available as an option on board.",
+             "de": "Für eine vollständige Verbindung ist an Bord zudem optional ein WLAN-Paket erhältlich.",
+             "es": "Para una conexión completa, también hay disponible a bordo un paquete Wi-Fi opcional."},
+            {"fr": "Notre presse numérique ainsi que notre programme de divertissement sont accessibles depuis votre écran ou votre appareil.",
+             "en": "Our digital press as well as our entertainment programme are accessible from your screen or your own device.",
+             "de": "Unsere digitale Presse sowie unser Unterhaltungsprogramm sind über Ihren Bildschirm oder Ihr eigenes Gerät zugänglich.",
+             "es": "Nuestra prensa digital, así como nuestro programa de entretenimiento, son accesibles desde su pantalla o su propio dispositivo."},
+            {"fr": "Un menu enfant est disponible sur ce vol pour nos plus jeunes passagers.",
+             "en": "A children's menu is available on this flight for our youngest passengers.",
+             "de": "Für unsere jüngsten Fluggäste steht auf diesem Flug ein Kindermenü zur Verfügung.",
+             "es": "En este vuelo hay disponible un menú infantil para nuestros pasajeros más pequeños."},
+        ],
+    },
+    "britishairways": {
+        "annonces": [
+            {"fr": "Notre carte à bord propose une sélection de sandwichs, friandises et boissons chaudes ou froides, disponible dès à présent.",
+             "en": "Our on-board menu offers a selection of sandwiches, treats and hot or cold drinks, available right now.",
+             "de": "Unsere Bordkarte bietet eine Auswahl an Sandwiches, Süßigkeiten und warmen oder kalten Getränken, ab sofort erhältlich.",
+             "es": "Nuestra carta a bordo ofrece una selección de sándwiches, dulces y bebidas calientes o frías, disponible desde ahora."},
+            {"fr": "Pour gagner du temps à bord, pensez à précommander vos produits préférés en ligne avant votre prochain vol.",
+             "en": "To save time on board, remember to pre-order your favourite items online before your next flight.",
+             "de": "Um an Bord Zeit zu sparen, denken Sie daran, Ihre Lieblingsprodukte vor Ihrem nächsten Flug online vorzubestellen.",
+             "es": "Para ganar tiempo a bordo, recuerden pedir por anticipado en línea sus productos favoritos antes de su próximo vuelo."},
+            {"fr": "Nos passagers en classe affaires bénéficient d'un repas inclus, préparé avec des ingrédients de saison et des produits britanniques.",
+             "en": "Our business class passengers enjoy an included meal, prepared with seasonal ingredients and British produce.",
+             "de": "Unsere Business-Class-Passagiere erhalten eine inkludierte Mahlzeit, zubereitet mit saisonalen Zutaten und britischen Produkten.",
+             "es": "Nuestros pasajeros de clase ejecutiva disfrutan de una comida incluida, preparada con ingredientes de temporada y productos británicos."},
+            {"fr": "Chaque achat à bord vous permet de cumuler des points de fidélité, utilisables pour vos prochains vols.",
+             "en": "Every purchase on board earns you loyalty points, which can be used for your future flights.",
+             "de": "Jeder Einkauf an Bord bringt Ihnen Treuepunkte ein, die Sie für Ihre nächsten Flüge nutzen können.",
+             "es": "Cada compra a bordo les permite acumular puntos de fidelidad, utilizables para sus próximos vuelos."},
+            {"fr": "Un forfait de messagerie Wi-Fi est disponible à bord dès les premières minutes du vol.",
+             "en": "A messaging Wi-Fi package is available on board from the first few minutes of the flight.",
+             "de": "Ein WLAN-Nachrichtenpaket ist an Bord bereits ab den ersten Flugminuten verfügbar.",
+             "es": "Un paquete Wi-Fi de mensajería está disponible a bordo desde los primeros minutos del vuelo."},
+            {"fr": "Pour naviguer ou regarder des films pendant le vol, un forfait Wi-Fi complet est proposé en option.",
+             "en": "To browse or watch films during the flight, a full Wi-Fi package is offered as an option.",
+             "de": "Um während des Fluges zu surfen oder Filme zu sehen, wird optional ein vollständiges WLAN-Paket angeboten.",
+             "es": "Para navegar o ver películas durante el vuelo, se ofrece opcionalmente un paquete Wi-Fi completo."},
+            {"fr": "Une petite bouteille d'eau et un en-cas vous seront offerts au cours de ce vol.",
+             "en": "A small bottle of water and a snack will be offered to you during this flight.",
+             "de": "Während dieses Fluges erhalten Sie eine kleine Flasche Wasser und einen Snack.",
+             "es": "Durante este vuelo se les ofrecerá una pequeña botella de agua y un tentempié."},
+        ],
+    },
+    "easyjet": {
+        "annonces": [
+            {"fr": "Notre équipage va maintenant passer avec le chariot de restauration : sandwichs, snacks sucrés et salés, boissons chaudes et froides.",
+             "en": "Our crew will now be passing through the cabin with the trolley: sandwiches, sweet and savoury snacks, hot and cold drinks.",
+             "de": "Unsere Crew kommt nun mit dem Bordwagen durch die Kabine: Sandwiches, süße und herzhafte Snacks, warme und kalte Getränke.",
+             "es": "Nuestra tripulación pasará ahora con el carrito: sándwiches, snacks dulces y salados, bebidas calientes y frías."},
+            {"fr": "Notre carte propose entre autres des chips, du chocolat, ainsi qu'un choix de thé, café ou chocolat chaud.",
+             "en": "Our menu includes crisps, chocolate, as well as a choice of tea, coffee or hot chocolate.",
+             "de": "Unsere Karte bietet unter anderem Chips, Schokolade, sowie eine Auswahl an Tee, Kaffee oder heißer Schokolade.",
+             "es": "Nuestra carta incluye entre otros patatas fritas, chocolate, así como una selección de té, café o chocolate caliente."},
+            {"fr": "En cette fin de journée, une bière, un gin tonic ou un verre de vin vous seront proposés pour accompagner votre vol.",
+             "en": "At this time of day, a beer, a gin and tonic or a glass of wine will be on offer to accompany your flight.",
+             "de": "Zu dieser Tageszeit werden Ihnen ein Bier, ein Gin Tonic oder ein Glas Wein angeboten, um Ihren Flug zu begleiten.",
+             "es": "A esta hora del día, se les ofrecerá una cerveza, un gin-tonic o una copa de vino para acompañar su vuelo."},
+            {"fr": "Le règlement à bord se fait uniquement par carte bancaire ou paiement sans contact, les espèces ne sont pas acceptées.",
+             "en": "Payment on board is by card or contactless only, cash is not accepted.",
+             "de": "Die Zahlung an Bord erfolgt nur per Karte oder kontaktlos, Bargeld wird nicht akzeptiert.",
+             "es": "El pago a bordo se realiza únicamente con tarjeta o sin contacto, no se acepta efectivo."},
+            {"fr": "Notre sélection boutique à bord propose parfums, cosmétiques et articles de voyage, à retrouver dans notre catalogue.",
+             "en": "Our on-board boutique selection offers perfumes, cosmetics and travel accessories, available in our catalogue.",
+             "de": "Unsere Bordboutique bietet Parfums, Kosmetika und Reisezubehör, die Sie in unserem Katalog finden.",
+             "es": "Nuestra selección de tienda a bordo ofrece perfumes, cosméticos y artículos de viaje, disponibles en nuestro catálogo."},
+            {"fr": "Pour les voyages en famille, un menu composé d'une collation sucrée et d'une boisson est disponible pour les enfants.",
+             "en": "For families travelling together, a menu made up of a sweet snack and a drink is available for children.",
+             "de": "Für Familien mit Kindern ist ein Menü aus einem süßen Snack und einem Getränk für Kinder erhältlich.",
+             "es": "Para las familias que viajan juntas, hay disponible para los niños un menú compuesto por un tentempié dulce y una bebida."},
+            {"fr": "Pensez à réserver vos repas à l'avance lors de votre prochaine réservation, pour profiter de tarifs préférentiels.",
+             "en": "Remember to pre-book your meals when making your next booking, to enjoy preferential rates.",
+             "de": "Denken Sie daran, Ihre Mahlzeiten bei Ihrer nächsten Buchung vorzubestellen, um von Vorzugspreisen zu profitieren.",
+             "es": "Recuerden reservar sus comidas por adelantado en su próxima reserva, para disfrutar de tarifas preferentes."},
+        ],
+    },
+}
+
 
 def embellir_nom_compagnie(nom):
     """Rend un nom de compagnie correctement prononcable par la synthese
@@ -721,16 +940,46 @@ def contexte(plan, metar_o=None, metar_d=None):
     except Exception:
         tz_o = 0.0
     heure_utc_reelle = None
-    try:
-        from SimConnect import SimConnect, AircraftRequests
-        _sm_h = SimConnect()
-        _aq_h = AircraftRequests(_sm_h, _time=500)
-        zt = _aq_h.get("ZULU_TIME")
-        if zt is not None:
-            heure_utc_reelle = (float(zt) / 3600.0) % 24.0
-        _sm_h.exit()
-    except Exception:
-        heure_utc_reelle = None
+    # 1) reutiliser en priorite la connexion SimConnect deja active et
+    #    entretenue par surveillance_simconnect() (si la boucle tourne) :
+    #    ouvrir ici une 2e connexion concurrente avec un timeout court
+    #    (ancien code : 500 ms) echouait souvent silencieusement - la
+    #    donnee ZULU_TIME n'avait pas le temps d'etre peuplee - et on
+    #    retombait alors sur l'heure PREVUE du plan SimBrief au lieu de
+    #    l'heure REELLE, d'ou des annonces "vol de nuit" declenchees a
+    #    tort en plein apres-midi.
+    if _AQ_SIMCONNECT_ACTIF is not None:
+        try:
+            zt = _AQ_SIMCONNECT_ACTIF.get("ZULU_TIME")
+            if zt is not None:
+                heure_utc_reelle = (float(zt) / 3600.0) % 24.0
+                _journal("contexte(): ZULU_TIME via connexion active = %.3fh UTC" % heure_utc_reelle)
+        except Exception as ex:
+            _journal("contexte(): lecture ZULU_TIME via connexion active impossible : %r" % ex)
+            heure_utc_reelle = None
+    # 2) sinon (pas de boucle de surveillance en cours, ex. regeneration
+    #    manuelle --vol/--tout), ouvrir une connexion dediee avec un
+    #    timeout plus large (2000 ms, comme surveillance_simconnect) et
+    #    quelques tentatives, le temps que SimConnect peuple la donnee.
+    if heure_utc_reelle is None:
+        try:
+            from SimConnect import SimConnect, AircraftRequests
+            _sm_h = SimConnect()
+            _aq_h = AircraftRequests(_sm_h, _time=2000)
+            for _tentative in range(3):
+                zt = _aq_h.get("ZULU_TIME")
+                if zt is not None:
+                    heure_utc_reelle = (float(zt) / 3600.0) % 24.0
+                    break
+                time.sleep(0.3)
+            _sm_h.exit()
+            if heure_utc_reelle is not None:
+                _journal("contexte(): ZULU_TIME via connexion dediee = %.3fh UTC" % heure_utc_reelle)
+            else:
+                _journal("contexte(): ZULU_TIME indisponible apres 3 tentatives, repli plan SimBrief.")
+        except Exception as ex:
+            _journal("contexte(): connexion SimConnect dediee impossible (%r), repli plan SimBrief." % ex)
+            heure_utc_reelle = None
     if heure_utc_reelle is not None:
         minute_locale = int(round((heure_utc_reelle + tz_o) * 60.0)) % 1440
     else:
@@ -790,6 +1039,17 @@ def contexte(plan, metar_o=None, metar_d=None):
         "es": " Para su entretenimiento durante el vuelo, conéctese a nuestra red Wi-Fi de a bordo: películas, series y prensa digital están disponibles gratis en streaming desde su propio teléfono o tableta.",
     }
 
+    # --- service a bord specifique a la compagnie identifiee (cf. SERVICES_BORD) ---
+    _cle_compagnie = re.sub(r"[^a-z0-9]", "", (COMPAGNIE or "").lower())
+    _svc = SERVICES_BORD.get(_cle_compagnie)
+    if _svc and _svc.get("wifi"):
+        WIFI_DIVERTISSEMENT = _svc["wifi"]
+    if _svc and _svc.get("annonces"):
+        _choix_svc = random.choice(_svc["annonces"])
+        SERVICE_COMPAGNIE = {L: " " + _choix_svc[L] for L in LANGS}
+    else:
+        SERVICE_COMPAGNIE = {L: "" for L in LANGS}
+
     MENUS = {
         "petit_dej": {
             "fr": ["un petit-déjeuner continental avec viennoiserie, fromage frais et fruits",
@@ -839,6 +1099,29 @@ def contexte(plan, metar_o=None, metar_d=None):
                    "risotto de setas",
                    "pescado con arroz y verduras verdes"],
         },
+        # encas du matin (8h-11h) : cafe/the/boisson chaude + une petite douceur,
+        # plus leger qu'une vraie collation.
+        "encas_matin": {
+            "fr": ["un café, un thé ou une boisson chaude, avec une viennoiserie",
+                   "une boisson chaude accompagnée d'un biscuit"],
+            "en": ["coffee, tea or a hot drink, with a pastry",
+                   "a hot drink with a biscuit"],
+            "de": ["Kaffee, Tee oder ein heißes Getränk, mit einem Gebäckstück",
+                   "ein heißes Getränk mit einem Keks"],
+            "es": ["café, té o una bebida caliente, con un dulce",
+                   "una bebida caliente con una galleta"],
+        },
+        # encas de l'apres-midi (14h-16h) : pause plus "gourmande", sucree.
+        "encas_apresmidi": {
+            "fr": ["une collation gourmande avec pâtisserie ou chocolat",
+                   "un encas sucré avec gâteau et boisson fraîche"],
+            "en": ["a sweet treat with pastry or chocolate",
+                   "a sweet snack with cake and a cold drink"],
+            "de": ["einen süßen Snack mit Gebäck oder Schokolade",
+                   "einen süßen Imbiss mit Kuchen und einem kalten Getränk"],
+            "es": ["un tentempié goloso con bollería o chocolate",
+                   "un snack dulce con pastel y una bebida fresca"],
+        },
     }
     BOISSONS = {"fr": "eau, jus de fruits, sodas, thé, café, et une sélection de vins et bières",
                 "en": "water, fruit juice, soft drinks, tea, coffee, and a selection of wines and beers",
@@ -847,18 +1130,28 @@ def contexte(plan, metar_o=None, metar_d=None):
 
     if nuit_embarquement:
         REPAS = {
-            "fr": "Comme il s'agit d'un vol de nuit, le service sera léger : le nécessaire (eau, couvertures, collations) est à votre disposition aux emplacements prévus dans la cabine.",
-            "en": "As this is a night flight, service will be light: water, blankets and snacks are available at the locations provided in the cabin.",
-            "de": "Da es sich um einen Nachtflug handelt, fällt der Service schlicht aus: Wasser, Decken und Snacks finden Sie an den dafür vorgesehenen Stellen in der Kabine.",
-            "es": "Al tratarse de un vuelo nocturno, el servicio será ligero: el agua, las mantas y los tentempiés están disponibles en los lugares previstos de la cabina.",
+            "fr": "Comme il s'agit d'un vol de nuit, le service sera léger : boissons et encas sont à votre disposition aux emplacements prévus dans la cabine ; n'hésitez pas à solliciter notre équipage.",
+            "en": "As this is a night flight, service will be light: drinks and snacks are available at the locations provided in the cabin; please do not hesitate to ask our crew.",
+            "de": "Da es sich um einen Nachtflug handelt, fällt der Service schlicht aus: Getränke und Snacks finden Sie an den dafür vorgesehenen Stellen in der Kabine ; sprechen Sie gerne unsere Crew an.",
+            "es": "Al tratarse de un vuelo nocturno, el servicio será ligero: bebidas y tentempiés están disponibles en los lugares previstos de la cabina; no duden en pedírselo a la tripulación.",
         }
     else:
+        # horaires precises par Herve (23/11/2026) : petit-dejeuner 6h-8h,
+        # encas/boisson chaude 8h-11h, dejeuner 11h-13h, encas gourmand
+        # 14h-16h, diner 19h-21h ; en dehors de ces creneaux (13h-14h,
+        # 16h-19h, 21h-22h), collation generique par defaut.
         if 6 * 60 <= minute_locale < 8 * 60:
             cle, moment = "petit_dej", {"fr": "Comme il est tôt, nous vous proposons", "en": "As it is still early, we are offering you",
                                          "de": "Da es noch früh ist, bieten wir Ihnen", "es": "Como es temprano, les proponemos"}
-        elif 11 * 60 + 30 <= minute_locale < 13 * 60 + 30:
+        elif 8 * 60 <= minute_locale < 11 * 60:
+            cle, moment = "encas_matin", {"fr": "En attendant, nous vous proposons", "en": "In the meantime, we are offering you",
+                                           "de": "In der Zwischenzeit bieten wir Ihnen", "es": "Mientras tanto, les proponemos"}
+        elif 11 * 60 <= minute_locale < 13 * 60:
             cle, moment = "dejeuner", {"fr": "Pour le déjeuner, nous vous proposons", "en": "For lunch, we are offering you",
                                         "de": "Zum Mittagessen bieten wir Ihnen", "es": "Para el almuerzo, les proponemos"}
+        elif 14 * 60 <= minute_locale < 16 * 60:
+            cle, moment = "encas_apresmidi", {"fr": "Pour une pause gourmande, nous vous proposons", "en": "For a sweet break, we are offering you",
+                                               "de": "Für eine süße Pause bieten wir Ihnen", "es": "Para una pausa golosa, les proponemos"}
         elif 19 * 60 <= minute_locale < 21 * 60:
             cle, moment = "diner", {"fr": "Pour le dîner, nous vous proposons", "en": "For dinner, we are offering you",
                                      "de": "Zum Abendessen bieten wir Ihnen", "es": "Para la cena, les proponemos"}
@@ -888,7 +1181,7 @@ def contexte(plan, metar_o=None, metar_d=None):
     for L in LANGS:
         out[L] = dict(EW=EW[L], FN=fn[L], ORIG=vo[L], DEST=vd[L], DUR=du[L], TEMP_O=to[L], TEMP_D=td[L],
                       SKY_O=so[L], SKY_D=sd[L], WIND_D=wd[L], COMMENT_D=cm[L], TURB=tu[L], NOM=nom,
-                      RETARD=RETARD[L], REPAS=REPAS[L], SCENARIO=SCENARIO[L],
+                      RETARD=RETARD[L], REPAS=REPAS[L], SCENARIO=SCENARIO[L], SERVICE_COMPAGNIE=SERVICE_COMPAGNIE[L],
                       AMBIANCE_NUIT=AMBIANCE_NUIT[L], WIFI=WIFI_DIVERTISSEMENT[L], SALUT=SALUT[L])
     return out
 
@@ -916,7 +1209,7 @@ add("BoardingWelcome", True, True, [
      "es": "Señoras y señores, la tripulación del vuelo {EW} {FN} se complace en darles la bienvenida a bordo. Nos dirigimos a {DEST}. Mientras se instalan, les rogamos guardar su equipaje y dejar el pasillo libre. Miembros de la tripulación están a su disposición para ayudarles a guardar su equipaje. Gracias."},
 ])
 add("BoardingComplete", True, True, [
-    {"fr": "Mesdames et messieurs, l'embarquement est terminé. Merci d'avoir été aussi ponctuels. Nous allons bientôt fermer les portes. Votre temps de vol jusqu'à {DEST} sera d'environ {DUR}. Merci de passer vos appareils électroniques en mode avion.",
+    {"fr": "Mesdames et messieurs, l'embarquement est à présent terminé, merci d'avoir été aussi ponctuels. Nous allons bientôt fermer les portes. Votre temps de vol jusqu'à {DEST} sera d'environ {DUR}. Merci de passer vos appareils électroniques en mode avion.",
      "en": "Ladies and gentlemen, boarding is now complete. Thank you for being so punctual. We will close the doors shortly. Your flight time to {DEST} will be about {DUR}. Please switch your electronic devices to flight mode.",
      "de": "Meine Damen und Herren, das Boarding ist abgeschlossen. Vielen Dank, dass Sie so pünktlich waren. Wir werden die Türen in Kürze schließen. Ihre Flugzeit nach {DEST} beträgt etwa {DUR}. Bitte schalten Sie Ihre elektronischen Geräte in den Flugmodus.",
      "es": "Señoras y señores, el embarque ha finalizado. Gracias por ser tan puntuales. En breve cerraremos las puertas. Su tiempo de vuelo hasta {DEST} será de aproximadamente {DUR}. Pongan sus dispositivos electrónicos en modo avión."},
@@ -924,7 +1217,7 @@ add("BoardingComplete", True, True, [
      "en": "Ladies and gentlemen, everybody is on board, which is perfect. The doors will now be closed. We will be flying to {DEST} for about {DUR}. Please fasten your seat belt, and put your phones in flight mode. Thank you.",
      "de": "Meine Damen und Herren, alle sind an Bord, perfekt. Die Türen werden nun geschlossen. Wir fliegen etwa {DUR} nach {DEST}. Bitte schließen Sie Ihren Sicherheitsgurt und schalten Sie Ihre Telefone in den Flugmodus. Vielen Dank.",
      "es": "Señoras y señores, todo el mundo está a bordo, perfecto. Las puertas van a cerrarse. Volaremos hacia {DEST} durante aproximadamente {DUR}. Abróchense el cinturón de seguridad y pongan sus teléfonos en modo avión. Gracias."},
-    {"fr": "Mesdames et messieurs, l'embarquement est maintenant terminé. L'équipage vous remercie, et vous souhaite un excellent vol {EW} jusqu'à {DEST}. Merci de rester assis, de relever votre tablette, et de porter toute votre attention à la démonstration de sécurité.",
+    {"fr": "Mesdames et messieurs, l'embarquement est maintenant terminé, l'équipage vous remercie et vous souhaite un excellent vol {EW} jusqu'à {DEST}. Merci de rester assis, de relever votre tablette, et de porter toute votre attention à la démonstration de sécurité.",
      "en": "Ladies and gentlemen, boarding is now complete. The crew thanks you, and wishes you an excellent {EW} flight to {DEST}. Please remain seated, stow your tray table, and give your full attention to the safety demonstration.",
      "de": "Meine Damen und Herren, das Boarding ist nun abgeschlossen. Die Crew bedankt sich und wünscht Ihnen einen ausgezeichneten {EW}-Flug nach {DEST}. Bitte bleiben Sie sitzen, klappen Sie Ihren Tisch hoch, und schenken Sie der Sicherheitsvorführung Ihre volle Aufmerksamkeit.",
      "es": "Señoras y señores, el embarque ha finalizado. La tripulación les agradece y les desea un excelente vuelo {EW} hasta {DEST}. Permanezcan sentados, suban su mesita, y presten toda su atención a la demostración de seguridad."},
@@ -1037,30 +1330,30 @@ add("CabinService", True, False, [
      "en": "Ladies and gentlemen, our crew will now begin the cabin service. Please lower your tray table. {REPAS}{SCENARIO}",
      "de": "Meine Damen und Herren, unsere Crew beginnt nun mit dem Bordservice. Bitte klappen Sie Ihren Tisch hoch. {REPAS}{SCENARIO}",
      "es": "Señoras y señores, nuestra tripulación va a comenzar ahora el servicio a bordo. Suban su mesita. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, notre équipage va maintenant commencer le service à bord avec notre carte Wings Bistro. Pensez à notre Meal Deal : un plat, une boisson et un dessert, à prix avantageux. {REPAS}{SCENARIO}",
-     "en": "Ladies and gentlemen, our crew will now begin the cabin service with our Wings Bistro menu. Don't miss our Meal Deal: a dish, a drink and a dessert, at a great price. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, unsere Crew beginnt nun mit dem Bordservice unserer Wings Bistro Karte. Verpassen Sie nicht unser Meal Deal: ein Gericht, ein Getränk und ein Dessert zu einem attraktiven Preis. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, nuestra tripulación va a comenzar ahora el servicio a bordo con nuestra carta Wings Bistro. No se pierdan nuestro Meal Deal: un plato, una bebida y un postre a un precio ventajoso. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, le service à bord va commencer. Pour les voyageurs qui le souhaitent, notre carte propose également un SAFt : une boisson offerte, associée à une contribution au carburant durable de notre compagnie. {REPAS}{SCENARIO}",
-     "en": "Ladies and gentlemen, the cabin service is about to begin. For those interested, our menu also offers a SAFt: a free drink, paired with a contribution to our airline's sustainable fuel. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, der Bordservice beginnt in Kürze. Für Interessierte bietet unsere Karte auch ein SAFt an: ein kostenloses Getränk, verbunden mit einem Beitrag zu nachhaltigem Treibstoff unserer Fluggesellschaft. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, el servicio a bordo va a comenzar. Para quienes lo deseen, nuestra carta también ofrece un SAFt: una bebida gratuita, junto con una contribución al combustible sostenible de nuestra compañía. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, notre équipage passe maintenant dans les allées avec la carte Wings Bistro. Pour les amateurs, notre Afterwork Deal associe une bière fraîche et un snack salé, à prix réduit. {REPAS}{SCENARIO}",
-     "en": "Ladies and gentlemen, our crew is now coming through the aisles with the Wings Bistro menu. For those in the mood, our Afterwork Deal pairs a cold beer with a savoury snack, at a reduced price. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, unsere Crew kommt nun mit der Wings Bistro Karte durch die Gänge. Für Liebhaber kombiniert unser Afterwork Deal ein kaltes Bier mit einem herzhaften Snack zu einem reduzierten Preis. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, nuestra tripulación recorre ahora los pasillos con la carta Wings Bistro. Para quienes lo deseen, nuestra oferta Afterwork combina una cerveza fría con un tentempié salado a un precio reducido. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, le service à bord va commencer. Petite astuce : si vous avez apporté votre propre tasse réutilisable, vous bénéficiez de cinquante centimes de réduction sur une boisson chaude. {REPAS}{SCENARIO}",
-     "en": "Ladies and gentlemen, the cabin service is about to begin. A small tip: if you brought your own reusable cup, you get fifty cents off a hot drink. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, der Bordservice beginnt in Kürze. Ein kleiner Tipp: Wenn Sie Ihre eigene wiederverwendbare Tasse mitgebracht haben, erhalten Sie fünfzig Cent Rabatt auf ein heißes Getränk. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, el servicio a bordo va a comenzar. Un pequeño consejo: si han traído su propia taza reutilizable, obtienen cincuenta céntimos de descuento en una bebida caliente. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, pendant que notre équipage prépare le service à bord, n'oubliez pas que notre portail de divertissement vous propose des films, des séries et notre magazine de bord, ainsi que notre boutique à bord. {REPAS}{SCENARIO}",
-     "en": "Ladies and gentlemen, while our crew prepares the cabin service, don't forget that our Wings Entertainment portal offers films, series and our in-flight magazine, as well as the Wings Shop. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, während unsere Crew den Bordservice vorbereitet, denken Sie daran, dass unser Unterhaltungsportal Ihnen Filme, Serien und unser Bordmagazin bietet, sowie unseren Bordshop. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, mientras nuestra tripulación prepara el servicio a bordo, no olviden que nuestro portal de entretenimiento ofrece películas, series y nuestra revista de vuelo, además de nuestra tienda a bordo. {REPAS}{SCENARIO}"},
-    {"fr": "Mesdames et messieurs, le service à bord va commencer avec notre carte Wings Bistro. Pour rappel, le règlement se fait exclusivement par carte bancaire ou paiement sans contact. Nous ne prenons pas les espèces. {REPAS}{SCENARIO}",
-     "en": "Ladies and gentlemen, the cabin service is about to begin with our Wings Bistro menu. Please note that payment is by card or contactless only. We do not accept cash. {REPAS}{SCENARIO}",
-     "de": "Meine Damen und Herren, der Bordservice mit unserer Wings Bistro Karte beginnt in Kürze. Bitte beachten Sie, dass die Zahlung nur per Karte oder kontaktlos möglich ist. Wir akzeptieren kein Bargeld. {REPAS}{SCENARIO}",
-     "es": "Señoras y señores, el servicio a bordo con nuestra carta Wings Bistro va a comenzar. Recuerden que el pago se realiza únicamente con tarjeta o sin contacto. No aceptamos efectivo. {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, notre équipage va maintenant commencer le service à bord.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "en": "Ladies and gentlemen, our crew will now begin the cabin service.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, unsere Crew beginnt nun mit dem Bordservice.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "es": "Señoras y señores, nuestra tripulación va a comenzar ahora el servicio a bordo.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, le service à bord va commencer.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "en": "Ladies and gentlemen, the cabin service is about to begin.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, der Bordservice beginnt in Kürze.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "es": "Señoras y señores, el servicio a bordo va a comenzar.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, notre équipage passe maintenant dans les allées pour le service à bord.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "en": "Ladies and gentlemen, our crew is now coming through the aisles for the cabin service.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, unsere Crew kommt nun für den Bordservice durch die Gänge.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "es": "Señoras y señores, nuestra tripulación recorre ahora los pasillos para el servicio a bordo.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, le service à bord va commencer.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "en": "Ladies and gentlemen, the cabin service is about to begin.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, der Bordservice beginnt in Kürze.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "es": "Señoras y señores, el servicio a bordo va a comenzar.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, pendant que notre équipage prépare le service à bord,{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "en": "Ladies and gentlemen, while our crew prepares the cabin service,{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, während unsere Crew den Bordservice vorbereitet,{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "es": "Señoras y señores, mientras nuestra tripulación prepara el servicio a bordo,{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}"},
+    {"fr": "Mesdames et messieurs, le service à bord va commencer.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "en": "Ladies and gentlemen, the cabin service is about to begin.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "de": "Meine Damen und Herren, der Bordservice beginnt in Kürze.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}",
+     "es": "Señoras y señores, el servicio a bordo va a comenzar.{SERVICE_COMPAGNIE} {REPAS}{SCENARIO}"},
 ])
 add("DescentStarted", True, True, [
     {"fr": "Mesdames et messieurs, nous avons commencé notre descente vers {DEST}. À {DEST}, il fait {TEMP_D}, {SKY_D}. {COMMENT_D} Veuillez regagner votre siège, attacher votre ceinture, relever votre tablette et remettre votre dossier en position verticale. Merci.",
@@ -1192,12 +1485,49 @@ async def tts(texte, voix, debit, hauteur, sortie, sem, essais_max=6, timeout_s=
     return False
 
 
-PA = ("highpass=f=180,equalizer=f=180:t=q:w=1:g=2,equalizer=f=3000:t=q:w=1:g=1.5,lowpass=f=9000,"
-      "acompressor=threshold=-22dB:ratio=2.5:attack=8:release=200,aecho=0.8:0.4:25:0.07,loudnorm=I=-18:TP=-2")
+PA = ("highpass=f=400,equalizer=f=200:t=q:w=1:g=-8,lowpass=f=3000,equalizer=f=1500:t=q:w=1.2:g=4,"
+      "acompressor=threshold=-14dB:ratio=1.3:attack=10:release=250,aecho=0.5:0.25:18:0.06,loudnorm=I=-26:TP=-3")
 
 
-def assemble(clips, carillon, sortie_ogg, tmp):
-    """clips : liste d'un ou deux mp3 (langue principale, puis langue secondaire si presente)."""
+# bruit de fond mixe sous la voix, par phase de vol :
+#  - embarquement (avant depart, moteurs pas encore demarres) : pas de bruit
+#    moteur, juste un leger brouhaha de cabine (bruit "pink" dans la bande
+#    vocale, module en amplitude pour evoquer des voix qui se chevauchent,
+#    sans aucune parole reelle synthetisee ni echantillon enregistre) ;
+#  - sol_moteurs (portes armees, check cabine avant le decollage, roulage a
+#    l'arrivee) : moteurs demarres, ronronnement de reacteurs au ralenti ;
+#  - montee : pleine poussee, le plus fort ;
+#  - croisiere : stable et moyen ;
+#  - descente/approche : reacteurs reduits.
+# amplitude = niveau du bruit genere ; lp/hp = bande passante du filtrage.
+PROFIL_BRUIT_FOND = {
+    "embarquement": dict(color="pink",  amplitude=0.040, lp=2000, hp=200, tremolo=False),
+    "sol_moteurs":  dict(color="brown", amplitude=0.030, lp=400,  hp=60,  tremolo=False),
+    "montee":       dict(color="brown", amplitude=0.085, lp=700,  hp=50,  tremolo=False),
+    "croisiere":    dict(color="brown", amplitude=0.045, lp=550,  hp=50,  tremolo=False),
+    "descente":     dict(color="brown", amplitude=0.035, lp=500,  hp=50,  tremolo=False),
+}
+PHASE_PAR_TYPE = {
+    # avant le depart, moteurs coupes : embarquement/debarquement, portes
+    # desarmees a l'arrivee -> brouhaha de cabine, pas de bruit moteur.
+    "BoardingWelcome": "embarquement", "BoardingComplete": "embarquement",
+    "DisarmDoors": "embarquement", "DeboardingStarted": "embarquement",
+    "DeboardingComplete": "embarquement",
+    # portes armees, check cabine avant takeoff, roulage a l'arrivee : les
+    # moteurs sont deja demarres.
+    "ArmDoors": "sol_moteurs", "PreSafetyBriefing": "sol_moteurs",
+    "SafetyBriefing": "sol_moteurs", "CrewTakeSeats": "sol_moteurs",
+    "CabinDim": "sol_moteurs", "CabinSecured": "sol_moteurs", "AfterLanding": "sol_moteurs",
+    "AfterTakeoff": "montee", "SeatbeltSignOff": "montee", "Decompression": "montee",
+    "CabinService": "croisiere",
+    "DescentStarted": "descente", "SeatbeltSignOn": "descente",
+}
+
+
+def assemble(clips, carillon, sortie_ogg, tmp, nom_type=""):
+    """clips : liste d'un ou deux mp3 (langue principale, puis langue secondaire si presente).
+    nom_type : nom du type d'annonce (ex. "AfterTakeoff"), utilisé pour choisir
+    le profil de bruit de fond adapté à la phase de vol correspondante."""
     sil1, sil2 = os.path.join(tmp, "s1.wav"), os.path.join(tmp, "s2.wav")
     entrees = []
     def inp(p):
@@ -1209,8 +1539,20 @@ def assemble(clips, carillon, sortie_ogg, tmp):
         idx.append(inp(clip))
         if i < len(clips) - 1:
             idx.append(inp(sil2))
+    profil = PROFIL_BRUIT_FOND[PHASE_PAR_TYPE.get(nom_type, "croisiere")]
+    idx_bruit = len(entrees) // 2
+    entrees.extend(["-f", "lavfi", "-i", "anoisesrc=color=%s:amplitude=%s:sample_rate=44100" % (profil["color"], profil["amplitude"])])
     f = ";".join("[%d:a]aresample=24000,aformat=channel_layouts=mono[a%d]" % (i, i) for i in idx)
-    f += ";" + "".join("[a%d]" % i for i in idx) + "concat=n=%d:v=0:a=1,%s[o]" % (len(idx), PA)
+    f += ";" + "".join("[a%d]" % i for i in idx) + "concat=n=%d:v=0:a=1,%s[voix]" % (len(idx), PA)
+    # bruit de fond mixe sans normaliser (sinon amix diviserait aussi le
+    # niveau de la voix par deux). tremolo = legere pulsation d'amplitude,
+    # pour evoquer des voix qui se chevauchent (brouhaha) plutot qu'un bruit
+    # constant et mecanique.
+    f += ";[%d:a]lowpass=f=%d,highpass=f=%d" % (idx_bruit, profil["lp"], profil["hp"])
+    if profil.get("tremolo"):
+        f += ",tremolo=f=4:d=0.6"
+    f += "[amb]"
+    f += ";[voix][amb]amix=inputs=2:duration=first:normalize=0[o]"
     ffmpeg(*entrees, "-filter_complex", f, "-map", "[o]", "-ar", "44100", "-c:a", "libvorbis", "-q:a", "4", sortie_ogg)
 
 
@@ -1271,7 +1613,7 @@ async def genere(profils, types, ctx, sortie_dir):
                     complet = False
             if complet and clips:
                 sortie = os.path.join(sortie_dir, "%s[%d].ogg" % (nom, num))
-                await asyncio.get_event_loop().run_in_executor(None, assemble, clips, carillon, sortie, tmpb)
+                await asyncio.get_event_loop().run_in_executor(None, assemble, clips, carillon, sortie, tmpb, nom)
                 ok += 1
             else:
                 echoues.append((num, prof, ti, entree))
@@ -1563,6 +1905,58 @@ def _attendre(secondes, arreter):
         time.sleep(1)
 
 
+# Nom canonique par code ICAO compagnie : le champ atc_airline ecrit a la main
+# par le createur d'une livree est parfois fantaisiste ou deforme (ex. le
+# livery.cfg de la livree Air France F-HEPH ecrit "Airfrans" au lieu de "Air
+# France", sans doute pour eviter toute mention directe de la marque dans le
+# fichier). Le code ICAO (icao_airline), lui, est fiable : on privilegie donc
+# ce nom canonique quand on connait le code, pour que la prononciation ET la
+# bibliotheque SERVICES_BORD (qui est indexee sur le nom, pas sur le code)
+# retombent correctement sur la bonne compagnie.
+NOM_COMPAGNIE_PAR_ICAO = {
+    "EWG": "Eurowings",
+    "EWE": "Eurowings Europe",
+    "TRA": "Transavia",
+    "TVF": "Transavia",
+    "AFR": "Air France",
+    "DLH": "Lufthansa",
+    "BAW": "British Airways",
+    "EZY": "easyJet",
+    "EJU": "easyJet",
+}
+
+
+JOURNAL_PATH = os.path.join(HERE, "debug_simconnect.log")
+
+
+def _journal(msg):
+    """Ecrit une ligne horodatee dans debug_simconnect.log, a cote de
+    config_cabine.json. La fenetre console de l'exe etant masquee pour les
+    simmers, ce fichier permet de diagnostiquer la detection SimConnect a
+    distance sans avoir besoin de voir la console. Best-effort, ne doit
+    jamais faire planter l'appelant ; tronque le fichier s'il devient trop
+    gros pour rester lisible."""
+    try:
+        ligne = "%s  %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg)
+        if os.path.exists(JOURNAL_PATH) and os.path.getsize(JOURNAL_PATH) > 200_000:
+            with open(JOURNAL_PATH, "r", encoding="utf-8", errors="ignore") as f:
+                reste = f.read()[-100_000:]
+            with open(JOURNAL_PATH, "w", encoding="utf-8") as f:
+                f.write(reste)
+        with open(JOURNAL_PATH, "a", encoding="utf-8") as f:
+            f.write(ligne)
+    except Exception:
+        pass
+
+
+# Connexion SimConnect deja etablie et entretenue par surveillance_simconnect()
+# (si la boucle de surveillance tourne). contexte() la reutilise en priorite
+# pour lire ZULU_TIME au lieu d'ouvrir une 2e connexion concurrente avec un
+# timeout court, qui echouait silencieusement (cf. bug heure non prise en
+# compte - repli errone sur l'heure PREVUE du plan SimBrief).
+_AQ_SIMCONNECT_ACTIF = None
+
+
 def livree_active_via_simconnect(aq, community):
     """Lit l'immatriculation (ATC ID) de l'avion actuellement charge dans le
     simulateur via SimConnect, et la fait correspondre a l'une des livrees
@@ -1571,17 +1965,38 @@ def livree_active_via_simconnect(aq, community):
     sinon None - permet de reconnaitre automatiquement la compagnie au
     demarrage du vol, sans selection manuelle."""
     try:
-        immat = aq.get("ATC_ID")
-    except Exception:
+        immat_brute = aq.get("ATC_ID")
+    except Exception as ex:
+        _journal("ATC_ID : exception a la lecture SimConnect : %r" % ex)
         return None
+    if not immat_brute:
+        _journal("ATC_ID : valeur vide/None renvoyee par SimConnect (%r)" % (immat_brute,))
+        return None
+    # le wrapper SimConnect renvoie l'ATC_ID en bytes (b'F-HEPH') : un str()
+    # direct produit le texte litteral "b'F-HEPH'" (avec le prefixe b et les
+    # quotes) au lieu de decoder la valeur, donc la comparaison avec
+    # l'immatriculation propre lue dans livery.cfg echouait toujours. On
+    # decode explicitement si c'est du bytes, puis on enleve en plus
+    # d'eventuels octets nuls de bourrage de fin de buffer (que .strip() seul
+    # n'enleve pas, ce ne sont pas des espaces).
+    if isinstance(immat_brute, (bytes, bytearray)):
+        immat = immat_brute.decode("utf-8", "ignore")
+    else:
+        immat = str(immat_brute)
+    immat = immat.replace("\x00", "").strip().strip('"').upper()
     if not immat:
+        _journal("ATC_ID : vide apres nettoyage (brut=%r)" % (immat_brute,))
         return None
-    immat = str(immat).strip().strip('"').upper()
-    if not immat:
-        return None
-    for livree in scanner_livrees_fenix(community):
+    livrees = scanner_livrees_fenix(community)
+    for livree in livrees:
         if (livree.get("immat") or "").strip().upper() == immat:
+            _journal("ATC_ID %r (brut=%r) -> correspondance trouvee : %s / %s / immat %s" %
+                      (immat, immat_brute, livree.get("compagnie"), livree.get("icao"), livree.get("immat")))
             return livree
+    # aucune correspondance : on journalise l'immat lue et celles connues,
+    # pour diagnostiquer facilement un futur cas de non-detection.
+    _journal("ATC_ID %r (brut=%r) sans correspondance parmi %d livree(s) scannee(s) : %s" %
+              (immat, immat_brute, len(livrees), [(l.get("compagnie"), l.get("icao"), l.get("immat")) for l in livrees]))
     return None
 
 
@@ -1597,7 +2012,7 @@ def surveillance_simconnect(arreter=None):
     (livree_active_via_simconnect) : si elle correspond a une livree
     installee, COMPAGNIE/CODES sont mis a jour automatiquement, sans
     selection manuelle dans l'interface."""
-    global COMPAGNIE, CODES
+    global COMPAGNIE, CODES, _AQ_SIMCONNECT_ACTIF
     print("=" * 70)
     print("%s - surveillance SimConnect (automatique)" % NOM_PRODUIT)
     print("Connexion a SimConnect... (necessite que MSFS 2024 soit lance)")
@@ -1618,10 +2033,14 @@ def surveillance_simconnect(arreter=None):
                     from SimConnect import SimConnect, AircraftRequests
                     sm = SimConnect()
                     aq = AircraftRequests(sm, _time=2000)
+                    _AQ_SIMCONNECT_ACTIF = aq
                     print("Connecte a SimConnect.")
+                    _journal("Connecte a SimConnect.")
                 except Exception as e:
                     print("SimConnect indisponible (%r). MSFS 2024 est-il lance ? Nouvel essai dans 15s." % e)
+                    _journal("SimConnect indisponible : %r" % e)
                     sm = None
+                    _AQ_SIMCONNECT_ACTIF = None
                     aq = None
                     _attendre(15, arreter)
                     continue
@@ -1629,8 +2048,10 @@ def surveillance_simconnect(arreter=None):
             en_vol = aq.get("SIM_ON_GROUND") is not None
             if en_vol:
                 echecs = 0
+                compagnie_vient_de_changer = False
                 if en_vol_avant is not True:
                     print("Vol detecte (SimConnect connecte a la simulation).")
+                    _journal("Vol detecte (SIM_ON_GROUND non-None).")
                     livree_detectee_pour = None
                 if livree_detectee_pour != True:
                     try:
@@ -1639,11 +2060,13 @@ def surveillance_simconnect(arreter=None):
                         livree = None
                         print("[SimConnect] detection livree impossible : %r" % ex)
                     if livree:
-                        nouvelle_compagnie = livree.get("compagnie") or COMPAGNIE
+                        _icao_livree = (livree.get("icao") or "").upper()
+                        nouvelle_compagnie = NOM_COMPAGNIE_PAR_ICAO.get(_icao_livree) or livree.get("compagnie") or COMPAGNIE
                         nouveaux_codes = [livree.get("icao")] if livree.get("icao") else CODES
                         if nouvelle_compagnie != COMPAGNIE or nouveaux_codes != CODES:
                             COMPAGNIE = nouvelle_compagnie
                             CODES = nouveaux_codes
+                            compagnie_vient_de_changer = True
                             try:
                                 cfg = _charge_config()
                                 cfg["compagnie"] = COMPAGNIE
@@ -1655,7 +2078,11 @@ def surveillance_simconnect(arreter=None):
                                   (COMPAGNIE, CODES[0] if CODES else "?", livree.get("immat") or "?"))
                         livree_detectee_pour = True
                 try:
-                    executer(["--auto", "--meteo"])
+                    # si la compagnie detectee vient de changer (nouvelle livree chargee
+                    # pour le meme plan SimBrief), --auto seul ne regenere rien (le plan
+                    # n'a pas change a ses yeux) : on force --vol pour regenerer tout de
+                    # suite le pack de la compagnie nouvellement identifiee.
+                    executer(["--vol" if compagnie_vient_de_changer else "--auto", "--meteo"])
                 except Exception as ex:
                     print("[SimConnect] erreur generation : %r" % ex)
                 en_vol_avant = True
@@ -1668,6 +2095,7 @@ def surveillance_simconnect(arreter=None):
                 if echecs >= 10:
                     sm = None
                     aq = None
+                    _AQ_SIMCONNECT_ACTIF = None
                     echecs = 0
                 _attendre(15, arreter)
         except KeyboardInterrupt:
@@ -1676,6 +2104,7 @@ def surveillance_simconnect(arreter=None):
         except Exception as ex:
             print("[SimConnect] erreur boucle (on reessaie dans 15s) : %r" % ex)
             _attendre(15, arreter)
+    _AQ_SIMCONNECT_ACTIF = None
     try:
         if sm:
             sm.exit()
