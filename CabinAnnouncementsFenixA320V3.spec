@@ -22,7 +22,7 @@ datas += [('mobiflight_module/modules/MobiFlightWasmModule.wasm', 'mobiflight_mo
 
 
 a = Analysis(
-    ['eurowings_cabin_v3.py'],
+    ['cabin_announcements_fenix_a320_v3.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -42,7 +42,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='EurowingsCabinAnnouncementsV3',
+    name='CabinAnnouncementsFenixA320V3',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

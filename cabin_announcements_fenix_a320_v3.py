@@ -2618,7 +2618,7 @@ def creer_raccourci_bureau_si_absent():
     dossier Community, langue, relancer l'installation) sans repasser par le
     dossier d'installation. La compagnie n'est plus selectionnee ici : elle est
     reconnue automatiquement en vol. Ne fait rien en mode developpement (python
-    eurowings_cabin_v3.py), seulement sur l'exe empaquete. Jamais bloquant :
+    cabin_announcements_fenix_a320_v3.py), seulement sur l'exe empaquete. Jamais bloquant :
     une erreur ici est ignoree."""
     if not getattr(sys, "frozen", False):
         return
@@ -2727,7 +2727,7 @@ def lancer_auto_suppression_dossier(dossier):
     reste alors a faire a la main, ce qui est indique au simmer)."""
     try:
         tmp = os.environ.get("TEMP") or os.environ.get("TMP") or os.path.expanduser("~")
-        script = os.path.join(tmp, "eurowings_cabin_v3_desinstall_%d.ps1" % os.getpid())
+        script = os.path.join(tmp, "cabin_announcements_fenix_a320_v3_desinstall_%d.ps1" % os.getpid())
         contenu = (
             "$ErrorActionPreference = 'SilentlyContinue'\r\n"
             "Wait-Process -Id %d\r\n"
